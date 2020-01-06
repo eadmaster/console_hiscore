@@ -25,6 +25,7 @@
 --nes,smb:
 Super Mario Bros. (World).nes:
 Super Mario Bros. (W) [!].nes:
+d445f698:
 @:maincpu,program,7df,4,0,0,ff
 
 
@@ -35,6 +36,7 @@ Tetris (World) (Rev A).gb:
 
 genesis,tf3:
 Thunder Force III (JU) [!].gen:
+1b3f399a:
 @:maincpu,program,fff2ac,4,00,90
 
 
@@ -48,7 +50,4 @@ Gun Nac (Japan).nes:
 ; TODO: add options
 
 
-;snes,axelay:
-;Axelay (U) [!].smc:
-;@:maincpu,program,f702,30,0,0,ff
-; TODO: fix
+

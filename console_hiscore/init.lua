@@ -1,5 +1,5 @@
 -- hiscore.lua
--- by borgar@borgar.net, WTFPL license
+-- by borgar@borgar.net & eadmaster, WTFPL license
 --
 -- This uses MAME's built-in Lua scripting to implment
 -- high-score saving with console_hiscore.dat infom just as older
@@ -7,10 +7,10 @@
 --
 local exports = {}
 exports.name = "console_hiscore"
-exports.version = "1.0.1"
+exports.version = "1.1.0"
 exports.description = "Hiscore support for console games"
 exports.license = "WTFPL license"
-exports.author = { name = "eadmaster@altervista.org" }
+exports.author = { name = "borgar@borgar.net & eadmaster" }
 local hiscore = exports
 
 local hiscore_plugin_path = ""
@@ -98,19 +98,30 @@ function hiscore.startplugin()
 	local function read_hiscore_dat ()
 	  local file = io.open( hiscoredata_path, "r" );
 	  local rm_match;
+	  local rm_match_crc;
 	  if not file then
 		file = io.open( hiscore_plugin_path .. "/console_hiscore.dat", "r" );
 	  end
 	  if emu.softname() ~= "" then
 		local soft = emu.softname():match("([^:]*)$")
-		rm_match = '^' .. emu.romname() .. ',' .. soft .. ':';
-	  elseif manager:machine().images["cart"]:filename() ~= "" then
+		rm_match = emu.romname() .. ',' .. soft .. ':';
+	  elseif manager:machine().images["cart"] ~= nil then
 		basename = string.gsub(manager:machine().images["cart"]:filename(), "(.*/)(.*)", "%2");
-		basename = basename:gsub('(['..("%^$().[]*+-?"):gsub("(.)", "%%%1")..'])', "%%%1");  -- escape special chars
-		rm_match = '^' .. basename .. ':';
+		print(manager:machine().images["cart"]:filename());
+		rm_match = basename .. ':';
+		rm_match_crc = string.format("%x", manager:machine().images["cart"]:crc()) .. ':';
+	  elseif manager:machine().images["cdrom"] ~= nil then
+		basename = string.gsub(manager:machine().images["cdrom"]:filename(), "(.*/)(.*)", "%2");
+		rm_match = basename .. ':';
+		rm_match_crc = string.format("%x", manager:machine().images["cdrom"]:crc()) .. ':';
 	  else
-		rm_match = '^' .. emu.romname() .. ':';
+		rm_match = emu.romname() .. ':';
 	  end
+	  -- DEBUG
+	  --print("DEBUG:")
+	  --print(rm_match_crc)
+	  --print(rm_match)
+	  -- END OF DEBUG
 	  local cluster = "";
 	  local current_is_match = false;
 	  if file then
@@ -124,7 +135,9 @@ function hiscore.startplugin()
 			  if current_is_match then
 				cluster = cluster .. "\n" .. line;
 			  end
-			elseif string.find(line, rm_match) then --- match this game
+			elseif line == rm_match then --- match this game
+			  current_is_match = true;
+			elseif line == rm_match_crc then --- match this game crc
 			  current_is_match = true;
 			elseif string.find(line, '^.+:') then --- some game
 			  if current_is_match and string.len(cluster) > 0 then
