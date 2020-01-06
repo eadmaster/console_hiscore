@@ -106,21 +106,22 @@ function hiscore.startplugin()
 		local soft = emu.softname():match("([^:]*)$")
 		rm_match = emu.romname() .. ',' .. soft .. ':';
 	  elseif manager:machine().images["cart"]:filename() ~= nil then
-		basename = string.gsub(manager:machine().images["cart"]:filename(), "(.*/)(.*)", "%2");
-		rm_match = basename .. ':';
-		rm_match_crc = string.format("%x", manager:machine().images["cart"]:crc()) .. ':';
+		local basename = string.gsub(manager:machine().images["cart"]:filename(), "(.*/)(.*)", "%2");
+		local filename = string.gsub(basename, "(.*)(%..*)", "%1");   -- strip the extension (e.g. ".nes")
+		rm_match = emu.romname() .. "," .. filename .. ':';
+		rm_match_crc = emu.romname() .. "," .. string.format("%x", manager:machine().images["cart"]:crc()) .. ':';
 	  elseif manager:machine().images["cdrom"]:filename() ~= nil then
-		basename = string.gsub(manager:machine().images["cdrom"]:filename(), "(.*/)(.*)", "%2");
-		filename = string.gsub(basename, "(.*)(%..*)", "%1");   -- strip the media extension (e.g. ".cue")
-		rm_match = filename .. '.' .. emu.romname() .. ':';  -- append the system name as extension
+		local basename = string.gsub(manager:machine().images["cdrom"]:filename(), "(.*/)(.*)", "%2");
+		local filename = string.gsub(basename, "(.*)(%..*)", "%1");   -- strip the extension (e.g. ".cue")
+		rm_match = emu.romname() .. "," .. filename .. ':';  -- append the system name as extension
 		--rm_match_crc = string.format("%x", manager:machine().images["cdrom"]:crc()) .. ':';  -- always 0 with cdrom media?
 	  else
 		rm_match = emu.romname() .. ':';
 	  end
 	  -- DEBUG
-	  print("DEBUG:")
-	  print(rm_match_crc)
-	  print(rm_match)
+	  --print("DEBUG:")
+	  --print(rm_match_crc)
+	  --print(rm_match)
 	  --print(emu.romname())
 	  --print(emu.softname())
 	  -- END OF DEBUG
@@ -184,7 +185,7 @@ function hiscore.startplugin()
 	  elseif manager:machine().images["cdrom"]:filename() ~= nil then
 		basename = string.gsub(manager:machine().images["cdrom"]:filename(), "(.*/)(.*)", "%2");
 		filename = string.gsub(basename, "(.*)(%..*)", "%1");   -- strip the media extension (e.g. ".cue")
-		r = hiscore_path .. '/' .. filename .. '.' .. emu.romname() .. ".hi";  -- append the system name ad extension
+		r = hiscore_path .. '/' .. filename .. '.' .. emu.romname() .. ".hi";  -- append the system name as extension
 	  else
 		r = hiscore_path .. '/' .. emu.romname() .. ".hi";
 	  end
