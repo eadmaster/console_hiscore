@@ -112,7 +112,7 @@ function hiscore.startplugin()
 	  elseif manager:machine().images["cdrom"]:filename() ~= nil then
 		basename = string.gsub(manager:machine().images["cdrom"]:filename(), "(.*/)(.*)", "%2");
 		filename = string.gsub(basename, "(.*)(%..*)", "%1");   -- strip the media extension (e.g. ".cue")
-		rm_match = filename .. '.' .. emu.romname() .. ':';  -- append the system name ad extension
+		rm_match = filename .. '.' .. emu.romname() .. ':';  -- append the system name as extension
 		--rm_match_crc = string.format("%x", manager:machine().images["cdrom"]:crc()) .. ':';  -- always 0 with cdrom media?
 	  else
 		rm_match = emu.romname() .. ':';
