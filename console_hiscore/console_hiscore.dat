@@ -52,12 +52,3 @@ nes,Gun-Nac (J) [T+Eng]:
 ; TODO: add options
 
 
-;snes,axelay:
-;snes,Axelay (USA):
-;snes,Axelay (U) [!]:
-;@:maincpu,program,f702,30,0,0,ff
-; TODO: fix
-
-
-saturn,Shienryuu (Japan):
-@:maincpu,program,f702,30,0,0,ff
