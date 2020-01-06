@@ -98,29 +98,31 @@ function hiscore.startplugin()
 	local function read_hiscore_dat ()
 	  local file = io.open( hiscoredata_path, "r" );
 	  local rm_match;
-	  local rm_match_crc;
+	  local rm_match_crc = 0;
 	  if not file then
 		file = io.open( hiscore_plugin_path .. "/console_hiscore.dat", "r" );
 	  end
 	  if emu.softname() ~= "" then
 		local soft = emu.softname():match("([^:]*)$")
 		rm_match = emu.romname() .. ',' .. soft .. ':';
-	  elseif manager:machine().images["cart"] ~= nil then
+	  elseif manager:machine().images["cart"]:filename() ~= nil then
 		basename = string.gsub(manager:machine().images["cart"]:filename(), "(.*/)(.*)", "%2");
-		print(manager:machine().images["cart"]:filename());
 		rm_match = basename .. ':';
 		rm_match_crc = string.format("%x", manager:machine().images["cart"]:crc()) .. ':';
-	  elseif manager:machine().images["cdrom"] ~= nil then
+	  elseif manager:machine().images["cdrom"]:filename() ~= nil then
 		basename = string.gsub(manager:machine().images["cdrom"]:filename(), "(.*/)(.*)", "%2");
-		rm_match = basename .. ':';
-		rm_match_crc = string.format("%x", manager:machine().images["cdrom"]:crc()) .. ':';
+		filename = string.gsub(basename, "(.*)(%..*)", "%1");   -- strip the media extension (e.g. ".cue")
+		rm_match = filename .. '.' .. emu.romname() .. ':';  -- append the system name ad extension
+		--rm_match_crc = string.format("%x", manager:machine().images["cdrom"]:crc()) .. ':';  -- always 0 with cdrom media?
 	  else
 		rm_match = emu.romname() .. ':';
 	  end
 	  -- DEBUG
-	  --print("DEBUG:")
-	  --print(rm_match_crc)
-	  --print(rm_match)
+	  print("DEBUG:")
+	  print(rm_match_crc)
+	  print(rm_match)
+	  --print(emu.romname())
+	  --print(emu.softname())
 	  -- END OF DEBUG
 	  local cluster = "";
 	  local current_is_match = false;
@@ -176,9 +178,13 @@ function hiscore.startplugin()
 	  if emu.softname() ~= "" then
 		local soft = emu.softname():match("([^:]*)$")
 		r = hiscore_path .. '/' .. emu.romname() .. "_" .. soft .. ".hi";
-	  elseif manager:machine().images["cart"]:filename() ~= "" then
+	  elseif manager:machine().images["cart"]:filename() ~= nil then
 		local basename = string.gsub(manager:machine().images["cart"]:filename(), "(.*/)(.*)", "%2");
 		r = hiscore_path .. '/' .. basename .. ".hi";
+	  elseif manager:machine().images["cdrom"]:filename() ~= nil then
+		basename = string.gsub(manager:machine().images["cdrom"]:filename(), "(.*/)(.*)", "%2");
+		filename = string.gsub(basename, "(.*)(%..*)", "%1");   -- strip the media extension (e.g. ".cue")
+		r = hiscore_path .. '/' .. filename .. '.' .. emu.romname() .. ".hi";  -- append the system name ad extension
 	  else
 		r = hiscore_path .. '/' .. emu.romname() .. ".hi";
 	  end
