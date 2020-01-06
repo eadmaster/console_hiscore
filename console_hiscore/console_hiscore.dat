@@ -1,0 +1,56 @@
+;     ___   ___ ___ ________ ______  ________ _____     _______    ______   _______ __________
+;    /  /  /  //  //       //  ___/ / ____  // _   \   /      /   / __   \ / __   //___   ___/
+;   /  /__/  //  //  _____//  /    / /   / // /_/  /  /  ____/   / /  \  // /_/  /    /  /
+;  /  __    //  //____   //  /    / /   / //      /  /  ____/   / /   / // __   /    /  /  
+; /  /  /  //  //       //  /___ / /___/ //  /\  \  /      /_  / /___/ // /  / /    /  / 
+;/__/  /__//__//_______//______//_______//__/  \__\/______//_//_______//_/  /_/    /__/               
+;_________________________________________________________________________________________
+;This file can be edited with a text editor, but keep the same format:
+; all fields are separated by a comma (,)
+; <gamename>,<softwarename>:
+; or
+; <long filename.extension>
+; for machines with softlists
+; @<cputag>,<addressspace>,<address>,<length>,<value to wait for 
+; in the first byte/word>,<value to wait for in the last byte/word>,<optional prefill>
+; [repeat the above as many times as necessary]
+;
+; Based on the Unofficial hiscore.dat file from http://highscore.mameworld.info/
+
+
+
+; ---- codes made by Leezer
+; ---- exported with grep '^[^@;].*,.*$' hiscore.dat
+
+--nes,smb:
+Super Mario Bros. (World).nes:
+Super Mario Bros. (W) [!].nes:
+d445f698:
+@:maincpu,program,7df,4,0,0,ff
+
+
+--gameboy,tetris:
+Tetris (World) (Rev A).gb:
+@:maincpu,program,d654,32,0,0,ff
+
+
+genesis,tf3:
+Thunder Force III (JU) [!].gen:
+1b3f399a:
+@:maincpu,program,fff2ac,4,00,90
+
+
+
+; ---- codes made by eadmaster
+
+nes,gunnac:
+nes,gunnacj:
+Gun Nac (Japan).nes:
+@:maincpu,program,e7,6,0,0,ff
+; TODO: add options
+
+
+;snes,axelay:
+;Axelay (U) [!].smc:
+;@:maincpu,program,f702,30,0,0,ff
+; TODO: fix
