@@ -30,10 +30,13 @@ if statedata[0:3] == b'NST':
 	raw_memory = statedata[56:]  # skip 56 bytes header
 # end of Nestopia
 
+# TODO: FCEUX
+
 # Snes9x
 elif statedata[0:9] == b'#!s9xsnp:':
-	SYSTEM = "smc"
+	SYSTEM = "snes"
 	raw_memory = statedata[68505:]  # v. 2002 / pocketsnes https://github.com/libretro/snes9x2002/blob/master/src/snapshot.c
+	# TODO: check other versions
 # end of Snes9x
 
 #elif statedata[0:3] == b'BST':
@@ -43,7 +46,7 @@ elif statedata[0:9] == b'#!s9xsnp:':
 elif statedata[0:10] == b'GENPLUS-GX':
 	print("GENPLUS-GX state detected")
 	raw_memoryswapped = statedata[16:]  # TODO: cut end ram
-	SYSTEM = "gen"
+	SYSTEM = "genesis"
 	# TODO: detect sms+gamegear
 	#if SYSTEM in ["sms", "gamegear"]:
 	#	raw_memory = statedata[16:0x200F]
@@ -58,8 +61,7 @@ elif statedata[0:10] == b'GENPLUS-GX':
 # TODO: Gambatte  https://github.com/libretro/gambatte-libretro/blob/master/libgambatte/src/statesaver.cpp
 # not doable?
 
-# TODO: MAME
-# https://github.com/mamedev/mame/blob/master/src/emu/save.cpp
+# TODO: MAME https://github.com/mamedev/mame/blob/master/src/emu/save.cpp
 elif statedata[0:8] == b'MAMESAVE':
 	print("MAME state detected")
 	#print("format ver: " + str(statedata[8]))
@@ -102,7 +104,7 @@ elif statedata[0:8] == b'MAMESAVE':
 	# "the emulator takes a snapshot of the current configuration of all the memory addresses currently in use by the game. This snapshot is unique and loading it back up is just a matter of forcing the memory back to those addresses." https://www.reddit.com/r/emulation/comments/34pk7q/how_do_save_states_work/
 	# https://wiki.mamedev.org/index.php/Save_State_Fundamentals
 	# TODO: raw_memory = raw_memory[???]
-	print("core unsupported")
+	print("MAME is unsupported, please check the mame_mkhiscoredebugscript.py")
 	sys.exit(1)
 	
 # TODO: more cores
@@ -134,7 +136,7 @@ while(True):
 	if line.endswith(":"):
 		# check if game matches
 		line_gamename = line.split(':')[0]
-		if not line_gamename == GAME_NAME + "." + SYSTEM:
+		if not line_gamename == SYSTEM + "," + GAME_NAME:
 			continue
 		# else reads the hiscore rows
 		while(True):
@@ -157,7 +159,7 @@ if len(hiscore_rows_to_process)==0:
 # else
 
 OUTPUT_PATH="./"
-OUTFILE_PATH = OUTPUT_PATH + GAME_NAME + "." + SYSTEM +".hi"
+OUTFILE_PATH = OUTPUT_PATH + GAME_NAME +".hi"
 #if SYSTEM == GAME_NAME:
 #	# MAME hiscores
 #	OUTFILE_PATH = OUTPUT_PATH + SYSTEM + ".hi"
@@ -178,7 +180,7 @@ for row in hiscore_rows_to_process:
 	start_byte = int(splitted_row[4], base=16)
 	end_byte = int(splitted_row[5], base=16)
 
-	if SYSTEM=="gen":
+	if SYSTEM=="genesis":
 		# fix genesis address
 		if address > 0xff0000:
 			address -= 0xff0000
