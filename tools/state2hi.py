@@ -10,6 +10,8 @@ HISCORE_PATH="/usr/share/games/mame/plugins/console_hiscore/console_hiscore.dat"
 
 GAME_NAME = os.path.splitext(os.path.basename(sys.argv[1]))[0]  # get basename without the extension
 
+EMU = ""
+
 if len(sys.argv) > 2:  # TODO: check if invoked from shell -> > 3
 	GAME_NAME = sys.argv[2]
 
@@ -27,26 +29,56 @@ statedata = open(sys.argv[1], 'rb').read()
 if statedata[0:3] == b'NST':
 	print("Nestopia state detected")
 	SYSTEM = "nes"
+	EMU = "nestopia"
 	raw_memory = statedata[56:]  # skip 56 bytes header
 # end of Nestopia
 
-# TODO: FCEUX
+# FCEUX
+if statedata[0:3] == b'FCS':
+	print("FCEU state detected")
+	SYSTEM = "nes"
+	EMU = "fceu"
+	raw_memory = statedata[0x5D:]  # skip header
+# end of Nestopia
 
-# Snes9x
-elif statedata[0:9] == b'#!s9xsnp:':
+# WIP: Gambatte  https://github.com/libretro/gambatte-libretro/blob/master/libgambatte/src/statesaver.cpp
+#print(statedata[0:16])
+#print(len(statedata[0:16]))
+#print(len(b'\x00\x01\x00\x00\x00\x61\x00\x00\x00\x01\x00\x62\x00\x00\x00\x01'))
+if statedata[0:16] == b'\x00\x01\x00\x00\x00\x61\x00\x00\x00\x01\x00\x62\x00\x00\x00\x01':
+	print("Gambatte state detected")
+	SYSTEM = "gameboy"
+	EMU = "gambatte"
+	# TODO: "gbcolor"
+	raw_memory = statedata  # no header to skip?
+	# TODO: test with games different from tetris
+# end of Gambatte
+	
+
+elif statedata[0:13] == b'#!s9xsnp:0011':
 	SYSTEM = "snes"
-	raw_memory = statedata[68505:]  # v. 2002 / pocketsnes https://github.com/libretro/snes9x2002/blob/master/src/snapshot.c
-	# TODO: check other versions
+	EMU = "snes9x"
+	raw_memory = statedata[0x10B99:]
+# Snes9x2002 / pocketsnes https://github.com/libretro/snes9x2002/blob/master/src/snapshot.c
+elif statedata[0:13] == b'#!s9xsnp:0001':
+	SYSTEM = "snes"
+	EMU = "snes9x2002"
+	raw_memory = statedata[0x10C64:]
 # end of Snes9x
 
-#elif statedata[0:3] == b'BST':
-# TODO: bsnes
+# bsnes
+elif statedata[0:3] == b'BST':
+	SYSTEM = "snes"
+	EMU = "bsnes"
+	raw_memory = statedata[0x21C:]
+# end of bsnes
 
 # Genesis-Plus-GX  https://github.com/ekeeke/Genesis-Plus-GX/blob/master/core/state.c
 elif statedata[0:10] == b'GENPLUS-GX':
 	print("GENPLUS-GX state detected")
 	raw_memoryswapped = statedata[16:]  # TODO: cut end ram
 	SYSTEM = "genesis"
+	EMU = "genplus"
 	# TODO: detect sms+gamegear
 	#if SYSTEM in ["sms", "gamegear"]:
 	#	raw_memory = statedata[16:0x200F]
@@ -57,9 +89,6 @@ elif statedata[0:10] == b'GENPLUS-GX':
 		raw_memory.append(raw_memoryswapped[i+1])
 		raw_memory.append(raw_memoryswapped[i])
 # end of Genesis-Plus-GX 
-
-# TODO: Gambatte  https://github.com/libretro/gambatte-libretro/blob/master/libgambatte/src/statesaver.cpp
-# not doable?
 
 # TODO: MAME https://github.com/mamedev/mame/blob/master/src/emu/save.cpp
 elif statedata[0:8] == b'MAMESAVE':
@@ -180,11 +209,13 @@ for row in hiscore_rows_to_process:
 	start_byte = int(splitted_row[4], base=16)
 	end_byte = int(splitted_row[5], base=16)
 
-	if SYSTEM=="genesis":
+	if EMU=="genplus":
 		# fix genesis address
 		if address > 0xff0000:
 			address -= 0xff0000
 		# TODO: byte swap
+	elif EMU=="gambatte":
+		address -= 0x7728
 		
 	#print(address)
 	outfile.write(raw_memory[address:address+length])
