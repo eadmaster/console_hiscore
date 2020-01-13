@@ -178,16 +178,17 @@ function hiscore.startplugin()
 	  local r;
 	  if emu.softname() ~= "" then
 		local soft = emu.softname():match("([^:]*)$")
-		r = hiscore_path .. '/' .. emu.romname() .. "_" .. soft .. ".hi";
+		r = hiscore_path .. '/' .. emu.romname() .. '/' .. soft .. ".hi";
 	  elseif manager:machine().images["cart"]:filename() ~= nil then
 		local basename = string.gsub(manager:machine().images["cart"]:filename(), "(.*/)(.*)", "%2")
 		filename = string.gsub(basename, "(.*)(%..*)", "%1");   -- strip the extension (e.g. ".nes")
-		r = hiscore_path .. '/' .. filename .. ".hi";
+		r = hiscore_path .. '/' .. emu.romname() .. '/' .. filename .. ".hi";
 	  elseif manager:machine().images["cdrom"]:filename() ~= nil then
 		basename = string.gsub(manager:machine().images["cdrom"]:filename(), "(.*/)(.*)", "%2");
 		filename = string.gsub(basename, "(.*)(%..*)", "%1");   -- strip the media extension (e.g. ".cue")
-		r = hiscore_path .. '/' .. filename .. ".hi";  -- append the system name as extension
+		r = hiscore_path .. '/' .. emu.romname() .. '/' .. filename .. ".hi";
 	  else
+		-- arcade games
 		r = hiscore_path .. '/' .. emu.romname() .. ".hi";
 	  end
 	  return r;
@@ -200,6 +201,7 @@ function hiscore.startplugin()
 	  if not output then
 		-- attempt to create the directory, and try again
 		lfs.mkdir( hiscore_path );
+		lfs.mkdir( hiscore_path .. '/' .. emu.romname() );
 		output = io.open(get_file_name(), "wb");
 	  end
 	  emu.print_verbose("console_hiscore: write_scores output")
