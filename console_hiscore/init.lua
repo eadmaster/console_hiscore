@@ -109,7 +109,7 @@ function hiscore.startplugin()
 		local basename = string.gsub(manager:machine().images["cart"]:filename(), "(.*/)(.*)", "%2");
 		local filename = string.gsub(basename, "(.*)(%..*)", "%1");   -- strip the extension (e.g. ".nes")
 		rm_match = emu.romname() .. "," .. filename .. ':';
-		rm_match_crc = emu.romname() .. "," .. string.format("%x", manager:machine().images["cart"]:crc()) .. ':';
+		rm_match_crc = emu.romname() .. ",crc32=" .. string.format("%x", manager:machine().images["cart"]:crc()) .. ':';
 	  elseif manager:machine().images["cdrom"]:filename() ~= nil then
 		local basename = string.gsub(manager:machine().images["cdrom"]:filename(), "(.*/)(.*)", "%2");
 		local filename = string.gsub(basename, "(.*)(%..*)", "%1");   -- strip the extension (e.g. ".cue")
@@ -119,8 +119,8 @@ function hiscore.startplugin()
 		rm_match = emu.romname() .. ':';
 	  end
 	  -- DEBUG
-	  --print("DEBUG:")
-	  --print(rm_match_crc)
+	  print("DEBUG:")
+	  print(rm_match_crc)
 	  --print(rm_match)
 	  --print(emu.romname())
 	  --print(emu.softname())
@@ -180,12 +180,13 @@ function hiscore.startplugin()
 		local soft = emu.softname():match("([^:]*)$")
 		r = hiscore_path .. '/' .. emu.romname() .. "_" .. soft .. ".hi";
 	  elseif manager:machine().images["cart"]:filename() ~= nil then
-		local basename = string.gsub(manager:machine().images["cart"]:filename(), "(.*/)(.*)", "%2");
-		r = hiscore_path .. '/' .. basename .. ".hi";
+		local basename = string.gsub(manager:machine().images["cart"]:filename(), "(.*/)(.*)", "%2")
+		filename = string.gsub(basename, "(.*)(%..*)", "%1");   -- strip the extension (e.g. ".nes")
+		r = hiscore_path .. '/' .. filename .. ".hi";
 	  elseif manager:machine().images["cdrom"]:filename() ~= nil then
 		basename = string.gsub(manager:machine().images["cdrom"]:filename(), "(.*/)(.*)", "%2");
 		filename = string.gsub(basename, "(.*)(%..*)", "%1");   -- strip the media extension (e.g. ".cue")
-		r = hiscore_path .. '/' .. filename .. '.' .. emu.romname() .. ".hi";  -- append the system name as extension
+		r = hiscore_path .. '/' .. filename .. ".hi";  -- append the system name as extension
 	  else
 		r = hiscore_path .. '/' .. emu.romname() .. ".hi";
 	  end

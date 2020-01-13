@@ -25,18 +25,21 @@
 nes,smb:
 nes,Super Mario Bros. (World):
 nes,Super Mario Bros. (W) [!]:
-nes,d445f698:
+nes,crc32=d445f698:
 @:maincpu,program,7df,4,0,0,ff
 
 
 gameboy,tetris:
 gameboy,Tetris (World) (Rev A):
+gameboy,Tetris (W) (V1.1) [!]:
+gameboy,46df91ad:
 @:maincpu,program,d654,32,0,0,ff
 
 
 genesis,tf3:
+genesis,Thunder Force III (Japan, USA):
 genesis,Thunder Force III (JU) [!]:
-genesis,1b3f399a:
+genesis,crc32=1b3f399a:
 @:maincpu,program,fff2ac,4,00,90
 
 
@@ -48,7 +51,19 @@ nes,gunnacj:
 nes,Gun Nac (USA):
 nes,Gun Nac (Japan):
 nes,Gun-Nac (J) [T+Eng]:
+nes,crc32=d9084936:
 @:maincpu,program,e7,6,0,0,ff
 ; TODO: add options
 
+
+snes,axelay:
+snes,Axelay (E) [!]:
+snes,crc32=f43f6743:
+snes,axelayu:
+snes,Axelay (USA):
+snes,crc32=f812b533:
+snes,Axelay (U) [!]:
+snes,crc32=f43f6743:
+@:maincpu,program,1e4c,2,30,57
+; TODO: add options
 
