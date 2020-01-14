@@ -33,6 +33,7 @@ statedata = open(sys.argv[1], 'rb').read()
 if statedata.startswith(b'PK'):
 	# inmemory zip file extraction
 	from zipfile import ZipFile
+	from io import BytesIO
 	zipdata = BytesIO()
 	zipdata.write(statedata)
 	input_zip_file = ZipFile(zipdata)
@@ -82,14 +83,14 @@ elif statedata.startswith(b'#!s9xsnp:0011'):
 	raw_memory = statedata[0x10B99:]  # system RAM starts after the "RAM:------:" string
 	
 # Snes9x2002 / pocketsnes  https://github.com/libretro/snes9x2002/blob/master/src/snapshot.c
-elif statedata.startswith(b'#!s9xsnp:0001'):
+elif statedata.startswith(b'#!snes9x:0001'):
 	SYSTEM = "snes"
 	EMU = "snes9x2002"
 	raw_memory = statedata[0x10C64:]  # system RAM starts after the "RAM:------:" string
 # end of Snes9x
 
-# bsnes
-elif statedata.startswith(b'BST'):
+# bsnes  https://github.com/byuu/bsnes/blob/master/bsnes/sfc/system/serialization.cpp
+elif statedata.startswith(b'BST1') or statedata[0x15:0x19] == b'BST1':
 	logging.warning("bsnes support is still WIP")
 	SYSTEM = "snes"
 	EMU = "bsnes"
@@ -164,9 +165,12 @@ else:
 	logging.error("emulator not supported")
 	sys.exit(1)
 
-
 logging.info("detected system: " + SYSTEM)
 logging.info("detected game: " + GAME_NAME)
+
+#OUTFILE_PATH=GAME_NAME + ".raw"
+#outfile = open(OUTFILE_PATH, "wb")
+#outfile.write(raw_memory)
 
 hiscore_file = open(HISCORE_PATH)
 hiscore_rows_to_process = []
