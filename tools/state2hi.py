@@ -5,6 +5,9 @@
 
 import sys
 import os
+import logging
+
+logging.getLogger().setLevel(logging.DEBUG)
 
 HISCORE_PATH="/usr/share/games/mame/plugins/console_hiscore/console_hiscore.dat"
 
@@ -24,58 +27,78 @@ if len(sys.argv) > 2:  # TODO: check if invoked from shell -> > 3
 
 statedata = open(sys.argv[1], 'rb').read()
 
+# switch on file header
+
+# compressed savestate detection
+if statedata.startswith(b'PK'):
+	# inmemory zip file extraction
+	from zipfile import ZipFile
+	zipdata = BytesIO()
+	zipdata.write(statedata)
+	input_zip_file = ZipFile(zipdata)
+	if(len(input_zip_file.filelist)>1):
+		logging.warning("more than 1 file in the compressed archive, using the 1st only: ")
+	statefile = input_zip_file.open(input_zip_file.filelist[0])
+	statedata = statefile.read()
+# end if
+
 # Nestopia
 # MEMO: savestates are swappable between retroarch and vanilla Nestopia (just rename *.state -> *.nst)
 if statedata[0:3] == b'NST':
-	print("Nestopia state detected")
 	SYSTEM = "nes"
 	EMU = "nestopia"
-	raw_memory = statedata[56:]  # skip 56 bytes header
+	raw_memory = statedata[0x38:]  # skip 56 bytes header
 # end of Nestopia
 
-# FCEUX
-if statedata[0:3] == b'FCS':
-	print("FCEU state detected")
+# NO? FCEUx  https://github.com/TASVideos/fceux/blob/master/src/state.cpp
+#elif statedata.startswith(b'FCSX'):
+# MEMO: feat. zlib compression
+
+# FCEUmm  https://github.com/libretro/libretro-fceumm/blob/master/src/state.c
+elif statedata.startswith(b'FCS\xFF'):
+	logging.warning("FCEU support is still WIP")
 	SYSTEM = "nes"
 	EMU = "fceu"
-	raw_memory = statedata[0x5D:]  # skip header
-# end of Nestopia
+	raw_memory = statedata[0x5D:]  # 2FIX: sometimes 0x56, 0x57
+# end of FCEU
 
-# WIP: Gambatte  https://github.com/libretro/gambatte-libretro/blob/master/libgambatte/src/statesaver.cpp
+# Gambatte  https://github.com/libretro/gambatte-libretro/blob/master/libgambatte/src/statesaver.cpp
 #print(statedata[0:16])
 #print(len(statedata[0:16]))
 #print(len(b'\x00\x01\x00\x00\x00\x61\x00\x00\x00\x01\x00\x62\x00\x00\x00\x01'))
-if statedata[0:16] == b'\x00\x01\x00\x00\x00\x61\x00\x00\x00\x01\x00\x62\x00\x00\x00\x01':
-	print("Gambatte state detected")
+elif statedata.startswith(b'\x00\x01\x00\x00\x00\x61\x00\x00\x00\x01\x00\x62\x00\x00\x00\x01'):
+	logging.warning("Gambatte support is still WIP")
 	SYSTEM = "gameboy"
 	EMU = "gambatte"
 	# TODO: "gbcolor"
 	raw_memory = statedata  # no header to skip?
 	# TODO: test with games different from tetris
 # end of Gambatte
-	
 
-elif statedata[0:13] == b'#!s9xsnp:0011':
+# Snes9x latest  https://github.com/snes9xgit/snes9x/blob/master/snapshot.cpp
+elif statedata.startswith(b'#!s9xsnp:0011'):
 	SYSTEM = "snes"
 	EMU = "snes9x"
-	raw_memory = statedata[0x10B99:]
-# Snes9x2002 / pocketsnes https://github.com/libretro/snes9x2002/blob/master/src/snapshot.c
-elif statedata[0:13] == b'#!s9xsnp:0001':
+	raw_memory = statedata[0x10B99:]  # system RAM starts after the "RAM:------:" string
+	
+# Snes9x2002 / pocketsnes  https://github.com/libretro/snes9x2002/blob/master/src/snapshot.c
+elif statedata.startswith(b'#!s9xsnp:0001'):
 	SYSTEM = "snes"
 	EMU = "snes9x2002"
-	raw_memory = statedata[0x10C64:]
+	raw_memory = statedata[0x10C64:]  # system RAM starts after the "RAM:------:" string
 # end of Snes9x
 
 # bsnes
-elif statedata[0:3] == b'BST':
+elif statedata.startswith(b'BST'):
+	logging.warning("bsnes support is still WIP")
 	SYSTEM = "snes"
 	EMU = "bsnes"
 	raw_memory = statedata[0x21C:]
 # end of bsnes
 
 # Genesis-Plus-GX  https://github.com/ekeeke/Genesis-Plus-GX/blob/master/core/state.c
-elif statedata[0:10] == b'GENPLUS-GX':
-	print("GENPLUS-GX state detected")
+elif statedata.startswith(b'GENPLUS-GX'):
+	logging.warning("GENPLUS-GX support is still WIP")
 	raw_memoryswapped = statedata[16:]  # TODO: cut end ram
 	SYSTEM = "genesis"
 	EMU = "genplus"
@@ -91,8 +114,7 @@ elif statedata[0:10] == b'GENPLUS-GX':
 # end of Genesis-Plus-GX 
 
 # TODO: MAME https://github.com/mamedev/mame/blob/master/src/emu/save.cpp
-elif statedata[0:8] == b'MAMESAVE':
-	print("MAME state detected")
+elif statedata.startswith(b'MAMESAVE'):
 	#print("format ver: " + str(statedata[8]))
 	#print("flags: " + str(statedata[9])) # TODO: parse
 	#print("game name: " + str(statedata[0x0A:0x1B], 'utf-8'))
@@ -133,18 +155,18 @@ elif statedata[0:8] == b'MAMESAVE':
 	# "the emulator takes a snapshot of the current configuration of all the memory addresses currently in use by the game. This snapshot is unique and loading it back up is just a matter of forcing the memory back to those addresses." https://www.reddit.com/r/emulation/comments/34pk7q/how_do_save_states_work/
 	# https://wiki.mamedev.org/index.php/Save_State_Fundamentals
 	# TODO: raw_memory = raw_memory[???]
-	print("MAME is unsupported, please check the mame_mkhiscoredebugscript.py")
+	logging.error("MAME is unsupported, please check the mame_mkhiscoredebugscript.py")
 	sys.exit(1)
 	
 # TODO: more cores
 
 else:
-	print("emulator not supported")
+	logging.error("emulator not supported")
 	sys.exit(1)
 
 
-print("detected system: " + SYSTEM)
-print("detected game: " + GAME_NAME)
+logging.info("detected system: " + SYSTEM)
+logging.info("detected game: " + GAME_NAME)
 
 hiscore_file = open(HISCORE_PATH)
 hiscore_rows_to_process = []
@@ -183,7 +205,7 @@ while(True):
 # end while
 
 if len(hiscore_rows_to_process)==0:
-	print("nothing found in hiscore.dat for current game")
+	logging.error("nothing found in hiscore.dat for current game")
 	sys.exit(1)
 # else
 
@@ -195,14 +217,14 @@ OUTFILE_PATH = OUTPUT_PATH + GAME_NAME +".hi"
 
 outfile = open(OUTFILE_PATH, "wb")
 
-print(OUTFILE_PATH + " created")
+logging.info(OUTFILE_PATH + " created")
 
 for row in hiscore_rows_to_process:
 	splitted_row = row.split(",")
 	cputag = splitted_row[0].split(":")[1]
 	addresspace = splitted_row[1]
 	if not addresspace=="program":
-		print("unsupported: " + addresspace)
+		logging.error("unsupported: " + addresspace)
 		sys.exit(1)
 	address = int(splitted_row[2], base=16)
 	length = int(splitted_row[3], base=16)
