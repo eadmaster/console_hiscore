@@ -51,7 +51,7 @@ if statedata[0:3] == b'NST':
 	raw_memory = statedata[0x38:]  # skip 56 bytes header
 # end of Nestopia
 
-# NO? FCEUx  https://github.com/TASVideos/fceux/blob/master/src/state.cpp
+# FCEUx  https://github.com/TASVideos/fceux/blob/master/src/state.cpp
 #elif statedata.startswith(b'FCSX'):
 # MEMO: feat. zlib compression
 
@@ -81,7 +81,19 @@ elif statedata.startswith(b'#!s9xsnp:0011'):
 	SYSTEM = "snes"
 	EMU = "snes9x"
 	raw_memory = statedata[0x10B99:]  # system RAM starts after the "RAM:------:" string
-	
+
+elif statedata.startswith(b'#!s9xsnp:0010'):
+	# UNTESTED
+	SYSTEM = "snes"
+	EMU = "snes9x2018"
+	raw_memory = statedata[0x10B96:]  # system RAM starts after the "RAM:------:" string
+
+elif statedata.startswith(b'#!s9xsnp:0006'):
+	# UNTESTED
+	SYSTEM = "snes"
+	EMU = "snes9x2010"
+	raw_memory = statedata[0x10B89:]  # system RAM starts after the "RAM:------:" string
+
 # Snes9x2002 / pocketsnes  https://github.com/libretro/snes9x2002/blob/master/src/snapshot.c
 elif statedata.startswith(b'#!snes9x:0001'):
 	SYSTEM = "snes"
@@ -89,8 +101,17 @@ elif statedata.startswith(b'#!snes9x:0001'):
 	raw_memory = statedata[0x10C64:]  # system RAM starts after the "RAM:------:" string
 # end of Snes9x
 
+# TODO: ZSNES https://github.com/ericpearson/zsnes/blob/cport/src/zstate.c
+# elif statedata.startswith(b'#!snes9x:0001'):
+# 	SYSTEM = "snes"
+# 	EMU = "zsnes"
+# 	raw_memory = statedata[0x10C64:]
+# end of Snes9x
+
 # bsnes  https://github.com/byuu/bsnes/blob/master/bsnes/sfc/system/serialization.cpp
-elif statedata.startswith(b'BST1') or statedata[0x15:0x19] == b'BST1':
+elif statedata.startswith(b'42\x53\x54\x31\x0F\x00\x00\x00\x70\x4C\x87\x10\x50\x65\x72\x66\x6F\x72\x6D\x61\x6E\x63\x65')  # BST1....pL..Performance
+#elif statedata[0x15:0x19] == b'BST1':  # old compressed saves?
+#elif statedata.startswith(b'BST1'):
 	logging.warning("bsnes support is still WIP")
 	SYSTEM = "snes"
 	EMU = "bsnes"
