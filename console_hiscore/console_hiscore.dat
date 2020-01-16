@@ -67,3 +67,10 @@ snes,crc32=f43f6743:
 @:maincpu,program,1e4c,2,30,57
 ; TODO: add options
 
+
+snes,macross:
+snes,Choujikuu Yousai Macross - Scrambled Valkyrie (J):
+snes,crc32=a5db02e9:
+@:maincpu,program,222,3,00,01
+; TODO: add options
+

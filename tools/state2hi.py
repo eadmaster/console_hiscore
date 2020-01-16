@@ -109,7 +109,7 @@ elif statedata.startswith(b'#!snes9x:0001'):
 # end of Snes9x
 
 # bsnes  https://github.com/byuu/bsnes/blob/master/bsnes/sfc/system/serialization.cpp
-elif statedata.startswith(b'42\x53\x54\x31\x0F\x00\x00\x00\x70\x4C\x87\x10\x50\x65\x72\x66\x6F\x72\x6D\x61\x6E\x63\x65')  # BST1....pL..Performance
+elif statedata.startswith(b'42\x53\x54\x31\x0F\x00\x00\x00\x70\x4C\x87\x10\x50\x65\x72\x66\x6F\x72\x6D\x61\x6E\x63\x65'):  # BST1....pL..Performance
 #elif statedata[0x15:0x19] == b'BST1':  # old compressed saves?
 #elif statedata.startswith(b'BST1'):
 	logging.warning("bsnes support is still WIP")
