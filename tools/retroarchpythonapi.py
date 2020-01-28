@@ -13,29 +13,28 @@ https://github.com/recalbox/recalbox-os/wiki/RetroArch-Network-Commands-(EN)
 import os
 import time
 import logging
-import threading
 import socket
 
 __version__ = 0.2
 __copyright__ = 'GPL V2'
 
-# for python2 compatibility
-def xrange(x):
-    return iter(range(x))
-    
-NETWORK_SLEEP_TIME=0.1
+#NETWORK_SLEEP_TIME=0.1
+
 
 class RetroArchPythonApi(object):
 
     """Usage:
+    from retroarchpythonapi import RetroArchPythonApi
     api = RetroArchPythonApi()
     
     #NOT SUPPORTED: api.start(<Game Path>,<Libretro Plugin Path>)
     api.toggle_pause()
     api.save_state()
     api.load_state()
+    api.read_core_ram(2015, 4)  # read 4 bytes from address 2015=7df
+    api.write_core_ram(2015, [0, 0, 0, 0])  # write 4 bytes set to 0 from address 2015=7df
     api.reset()
-    api.stop()
+    api.quit()
     """
 
     _socket = None
@@ -80,7 +79,6 @@ class RetroArchPythonApi(object):
         self._socket_ipaddr = ipaddr
         self._socket_portnum = portnum
 
-        logging.debug('Starting Retroarch Python API')
         self.logger.info('Starting Retroarch Python API (Version:%s)' % __version__)
 
 
@@ -178,7 +176,7 @@ class RetroArchPythonApi(object):
         return False
 
 
-    def stop(self):
+    def quit(self):
 
         """Exit a running ROM"""
 
@@ -221,7 +219,9 @@ class RetroArchPythonApi(object):
         except:
             self.logger.exception("")
             return False
-            
+        
+        time.sleep(0.5)
+        
         if self.is_paused():
             return 'paused'
         else:
