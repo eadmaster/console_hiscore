@@ -20,6 +20,7 @@ hiscore_inited_in_ram = False
 prev_content_name = None
 hiscore_rows_to_process = []
 hiscore_file_bytesio = BytesIO()
+hiscore_file_path = ""
 
 
 #print("Waiting for Retroarch connection...")
@@ -100,6 +101,8 @@ while retroarch.is_alive():
 	curr_hiscore_ram_bytesio.flush()
 	if curr_hiscore_ram_bytesio.getbuffer().nbytes > 0 and curr_hiscore_ram_bytesio.getvalue() != hiscore_file_bytesio.getvalue():
 		# (over-)write to the hiscore file
+		if not os.path.exists(HISCORE_PATH + "/" + system):
+			os.mkdir(HISCORE_PATH + "/" + system)
 		hiscore_file = open(hiscore_file_path, 'wb') # write+binary mode
 		hiscore_file.write(curr_hiscore_ram_bytesio.getvalue())
 		hiscore_file.close()
