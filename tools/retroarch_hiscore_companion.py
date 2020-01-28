@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# usage: $0 "Super Mario Bros. (World).nes" 
+# usage: enable `network_cmd_enable` in retroarch, set the HISCORE_DAT_PATH in state2hi.py
 
-HISCORE_PATH="."
+HISCORE_PATH="."  # path where .hi files will be loaded and saved
 
 import sys
 import os

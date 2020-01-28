@@ -4,10 +4,8 @@ This is a Python API for the RetroArch /
 libretro Libraries for Console Emulators
 Target:
 Create an easy to use API to implement it in your own UI
-Derived from:
-https://github.com/merlink01/RetroArchPythonAPI/
-added python3 support and made network-based
-https://github.com/recalbox/recalbox-os/wiki/RetroArch-Network-Commands-(EN)
+Derived from  https://github.com/merlink01/RetroArchPythonAPI/
+added python3 support and made network-based  https://github.com/recalbox/recalbox-os/wiki/RetroArch-Network-Commands-(EN)
 """
 
 import os

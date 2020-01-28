@@ -9,9 +9,7 @@ import logging
 
 logging.getLogger().setLevel(logging.DEBUG)
 
-HISCORE_PATH="/usr/share/games/mame/plugins/console_hiscore/console_hiscore.dat"
-
-GAME_NAME = os.path.splitext(os.path.basename(sys.argv[1]))[0]  # get basename without the extension
+HISCORE_DAT_PATH="/usr/share/games/mame/plugins/console_hiscore/console_hiscore.dat"
 
 
 def get_raw_memory_from_statedata(statedata):
@@ -183,7 +181,7 @@ def get_raw_memory_from_statedata(statedata):
 
 
 def get_hiscore_rows_from_game(SYSTEM, GAME_NAME):
-	hiscore_file = open(HISCORE_PATH)
+	hiscore_file = open(HISCORE_DAT_PATH)
 	rows = []
 	while(True):
 		line = hiscore_file.readline()
@@ -226,6 +224,7 @@ if __name__ == '__main__':
 
 	if len(sys.argv) > 2:  # TODO: check if invoked from shell -> > 3
 		GAME_NAME = sys.argv[2]
+		#GAME_NAME = os.path.splitext(os.path.basename(sys.argv[1]))[0]  # get basename without the extension
 
 		# check if system name was passed with softlist syntax
 		argv2_splitted=sys.argv[2].split(",")
