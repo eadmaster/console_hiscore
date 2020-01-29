@@ -9,8 +9,10 @@ import logging
 import time
 from io import BytesIO
 
-HISCORE_PATH="../hi"  # path where .hi files will be loaded and saved
-
+# path where .hi files will be loaded and saved
+HISCORE_PATH="../hi"
+if("HISCORE_PATH" in os.environ):
+    HISCORE_PATH = os.environ['HISCORE_PATH']
 
 logging.getLogger().setLevel(logging.DEBUG)
 
