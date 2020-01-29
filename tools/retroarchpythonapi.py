@@ -29,11 +29,20 @@ class RetroArchPythonApi(object):
     api.toggle_pause()
     api.save_state()
     api.load_state()
-    api.read_core_ram(2015, 4)  # read 4 bytes from address 2015=7df
-    api.write_core_ram(2015, [0, 0, 0, 0])  # write 4 bytes set to 0 from address 2015=7df
+    api.read_core_ram(0x7df, 4)  # read 4 bytes from address 7df
+    api.write_core_ram(0x7df, [0x00, 0x00, 0x00, 0x00])  # write 4 bytes set to 0 from address 7df
     api.reset()
     api.quit()
+    
+    methods to read current status:
+    api.is_paused()
+    api.is_running()
+    api.is_alive()
+    api.get_system_id()
+    api.get_content_name()
+    api.get_content_crc32_hash()
     """
+    
 
     _socket = None
     _socket_ipaddr = "127.0.0.1"
@@ -82,7 +91,7 @@ class RetroArchPythonApi(object):
 
     def _get_status(self):
 
-        """ checks if retroarch is alive"""
+        """ checks if Retroarch is alive"""
 
         try:
             self._socket.sendto(b'GET_STATUS\n', (self._socket_ipaddr, self._socket_portnum))
@@ -127,13 +136,14 @@ class RetroArchPythonApi(object):
         
         
     def get_content_name(self):
-        """ returns current content name, extracted from the rom file (e.g. 'Super Mario Bros. (W) [!]') """
+        """ returns current content name, from the ROM filename (e.g. 'Super Mario Bros. (W) [!]') """
         status_str = self._get_status()
         splitted_status_str = status_str.split(b",")
         return splitted_status_str[1]
             
 
     def get_content_crc32_hash(self):
+        """ returns current content CRC32 hash as a string """
         status_str = self._get_status()
         splitted_status_str = status_str.split(b",")
         return splitted_status_str[2].split(b"=")[1]
@@ -309,9 +319,8 @@ class RetroArchPythonApi(object):
         #time.sleep(0.5)
         return True
         
-
-
-    def save(self):
+        
+    def save_state(self):
 
         """Saves the State of the current Rom
         Return None: An Error occured

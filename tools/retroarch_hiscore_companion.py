@@ -46,6 +46,7 @@ while retroarch.is_alive():
 		# TODO: more systems
 		
 		from state2hi import get_hiscore_rows_from_game
+		# TODO: remove deps
 		hiscore_rows_to_process = get_hiscore_rows_from_game(system, curr_content_name)
 		if len(hiscore_rows_to_process)==0:
 			logging.error("nothing found in hiscore.dat for current game")
@@ -109,6 +110,6 @@ while retroarch.is_alive():
 		hiscore_file_bytesio = curr_hiscore_ram_bytesio  # keep the reference in memory
 		logging.info("written hiscore file " + hiscore_file_path)
 	else:
-		logging.debug("hiscore data unchanged in memory")
+		logging.debug("hiscore data unchanged in memory, nothing to save")
 # end while retroarch is running
 
