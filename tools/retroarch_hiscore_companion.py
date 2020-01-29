@@ -3,13 +3,14 @@
 
 # usage: enable `network_cmd_enable` in retroarch, set the HISCORE_DAT_PATH in state2hi.py
 
-HISCORE_PATH="."  # path where .hi files will be loaded and saved
-
 import sys
 import os
 import logging
 import time
 from io import BytesIO
+
+HISCORE_PATH="../hi"  # path where .hi files will be loaded and saved
+
 
 logging.getLogger().setLevel(logging.DEBUG)
 

@@ -9,7 +9,7 @@ import logging
 
 logging.getLogger().setLevel(logging.DEBUG)
 
-HISCORE_DAT_PATH="/usr/share/games/mame/plugins/console_hiscore/console_hiscore.dat"
+HISCORE_DAT_PATH="../plugins/console_hiscore/console_hiscore.dat"
 
 
 def get_raw_memory_from_statedata(statedata):
