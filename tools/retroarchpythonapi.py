@@ -188,7 +188,6 @@ class RetroArchPythonApi(object):
 
         """Exit a running ROM"""
 
-
         if not self.is_running():
             self.logger.error('Rom is not running')
             return False
@@ -237,6 +236,7 @@ class RetroArchPythonApi(object):
 
             
     def read_core_ram(self, address, length):
+        """ read from current core RAM at address length-bytes. Returs an array of bytes. """
         if not self.is_running():
             self.logger.error('Rom is not running')
             return []
@@ -262,6 +262,7 @@ class RetroArchPythonApi(object):
             
     
     def write_core_ram(self, address, buf):
+        """ write into current core RAM from address the array of bytes passed into buf. """
         cmd = b"WRITE_CORE_RAM " + ("%x" % address).encode()
         for b in buf:
             cmd += b" %02x" % b
