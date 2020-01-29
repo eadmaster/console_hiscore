@@ -10,7 +10,7 @@ import time
 from io import BytesIO
 
 # path where .hi files will be loaded and saved
-HISCORE_PATH="../hi"
+HISCORE_PATH = os.path.expanduser("~/.mame/hi")
 if("HISCORE_PATH" in os.environ):
     HISCORE_PATH = os.environ['HISCORE_PATH']
 
