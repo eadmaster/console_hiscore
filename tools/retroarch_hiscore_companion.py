@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# MEMO: RetroArch >= 1.8.5 is required
 # usage: enable `network_cmd_enable` in retroarch, set the HISCORE_DAT_PATH in state2hi.py
 
 import sys
@@ -26,9 +27,10 @@ hiscore_file_bytesio = BytesIO()
 hiscore_file_path = ""
 
 
-#print("Waiting for Retroarch connection...")
-while retroarch.is_alive(): 
-	time.sleep(5)
+while True: 
+	# wait for some content to be loaded
+	while not (retroarch.is_alive() and retroarch.has_content()):
+		time.sleep(5)
 	
 	curr_content_name = str(retroarch.get_content_name(), 'utf-8')
 	if not curr_content_name:
@@ -114,5 +116,8 @@ while retroarch.is_alive():
 		logging.info("written hiscore file " + hiscore_file_path)
 	else:
 		logging.debug("hiscore data unchanged in memory, nothing to save")
+	
+	# sleep to avoid sending too many read/write commands
+	time.sleep(5)
 # end while retroarch is running
 

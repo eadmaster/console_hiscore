@@ -2,10 +2,9 @@
 """Retroarch Python API
 This is a Python API for the RetroArch /
 libretro Libraries for Console Emulators
-Target:
-Create an easy to use API to implement it in your own UI
-Derived from  https://github.com/merlink01/RetroArchPythonAPI/
-added python3 support and made network-based  https://github.com/recalbox/recalbox-os/wiki/RetroArch-Network-Commands-(EN)
+
+Derived and mostly compatible with  https://github.com/merlink01/RetroArchPythonAPI/
+added python3 support and made network-based by eadmaster
 """
 
 import os
@@ -13,10 +12,9 @@ import time
 import logging
 import socket
 
-__version__ = 0.2
+__version__ = 0.3
 __copyright__ = 'GPL V2'
 
-#NETWORK_SLEEP_TIME=0.1
 
 
 class RetroArchPythonApi(object):
@@ -25,7 +23,6 @@ class RetroArchPythonApi(object):
     from retroarchpythonapi import RetroArchPythonApi
     api = RetroArchPythonApi()
     
-    #NOT SUPPORTED: api.start(<Game Path>,<Libretro Plugin Path>)
     api.toggle_pause()
     api.save_state()
     api.load_state()
@@ -35,9 +32,11 @@ class RetroArchPythonApi(object):
     api.quit()
     
     methods to read current status:
-    api.is_paused()
-    api.is_running()
-    api.is_alive()
+    api.is_alive()  # true if is responding to network commands
+    api.has_content()  # true if has some content loaded
+    api.is_paused() # true if has some content loaded and it IS paused
+    api.is_playing()  # true if has some content loaded and it IS NOT paused
+    api.get_version()
     api.get_system_id()
     api.get_content_name()
     api.get_content_crc32_hash()
@@ -47,12 +46,10 @@ class RetroArchPythonApi(object):
     _socket = None
     _socket_ipaddr = "127.0.0.1"
     _socket_portnum = 55355
-
-    rom_path = None
-    _fullscreen = None
+    _version = None
 
 
-    def __init__(self, ipaddr="127.0.0.1", portnum=55355):
+    def __init__(self, ipaddr="127.0.0.1", portnum=55355, NETWORK_SLEEP_TIME=0.1):
 
         # Logging
         self.logger = logging.getLogger('RetroArchPythonApi')
@@ -85,14 +82,29 @@ class RetroArchPythonApi(object):
         # save ipaddr and portnum for later use
         self._socket_ipaddr = ipaddr
         self._socket_portnum = portnum
+        
+        self.logger.info("Checking connection with Retroarch on " + ipaddr + ":" + str(portnum) + "...")
+        
+        # temp. add socket timeout
+        self._socket.settimeout(1)
+        
+        self._version = self.get_version()
+        if not self._version:
+            self.logger.warning("Connection timeout: make sure Retroarch is running, has network commands enabled and is connectable (will retry connecting until killed).")
+        while not self._version:
+            self._version = self.get_version()
+            time.sleep(2)
 
-        self.logger.info('Starting Retroarch Python API (Version:%s)' % __version__)
+        # remove socket timeout
+        self._socket.settimeout(None)
+        
+        self.logger.info('Retroarch connection checked')
+        
+        #TODO:if self._version <= b'1.8.4'
+        # self.logger.warning('Retroarch v1.8.4 does not support GET_STATUS command')
 
 
     def _get_status(self):
-
-        """ checks if Retroarch is alive"""
-
         try:
             self._socket.sendto(b'GET_STATUS\n', (self._socket_ipaddr, self._socket_portnum))
             response_str, addr = self._socket.recvfrom(4096) # buffer size is 4096 bytes - MEMO: blocking until something is received
@@ -100,16 +112,9 @@ class RetroArchPythonApi(object):
         except:
             logging.exception('')
             return ""
-            
-    def is_alive(self):
-        """ returns True if the Retroarch is running and has the network interface active """
-        status_str = self._get_status()
-        if status_str == "":
-            return False
-        else:
-            return True
-    
-    def is_running(self):
+
+
+    def has_content(self):
         """ returns True if the Retroarch has some content loaded (paused or not)"""
         status_str = self._get_status()
         splitted_status_str = status_str.split(b",")
@@ -118,11 +123,22 @@ class RetroArchPythonApi(object):
         else:
             return True
     
+
     def is_paused(self):
         """ returns True if the content is paused """
         status_str = self._get_status()
         splitted_status_str = status_str.split(b",")
         if splitted_status_str[0].split(b" ")[1] == b'PAUSED':
+            return True
+        else:
+            return False
+            
+
+    def is_playing(self):
+        """ returns True if the content is running """
+        status_str = self._get_status()
+        splitted_status_str = status_str.split(b",")
+        if splitted_status_str[0].split(b" ")[1] == b'RUNNING':
             return True
         else:
             return False
@@ -149,39 +165,27 @@ class RetroArchPythonApi(object):
         return splitted_status_str[2].split(b"=")[1]
     
     
-    def start(self, rom_path, core_path):
+    def get_version(self):
+        """ returns current Retroarch version (as a string) """
+        try:
+            self._socket.sendto(b'VERSION\n', (self._socket_ipaddr, self._socket_portnum))
+            response_str, addr = self._socket.recvfrom(16)
+            return response_str.rstrip()
+        except:
+            if not self._socket.gettimeout() == 1:
+                self.logger.exception("")
+            return 0
 
-        """Start a Game ROM
-        This Function needs the Path of the Plugin that could be used
-        rom_path: Path to the Game ROM
-        plugin_path: Path to the suitable Plugin from libretro
-        Returns: True if everything was fine
-        Returns: False an Error occured
-        """
 
-        rom_path = os.path.expanduser(rom_path)
-
-        if not os.path.isfile(rom_path):
-            self.logger.error('Error: Cant Start, Romfile not exist')
-            self.logger.error(rom_path)
+    def is_alive(self):
+        """ returns True if Retroarch is running and connectable """
+        self._socket.settimeout(1)  # temp. add socket timeout
+        v = self.get_version()
+        self._socket.settimeout(None)  # remove socket timeout
+        if v:
+            return True
+        else:
             return False
-
-        if not os.path.isfile(core_path):
-            self.logger.error('Error: Cant Start, Corefile not exist')
-            self.logger.error(core_path)
-            return False
-
-        if self.is_running():
-            self.logger.warning('Error: Cant Start, Rom already running')
-            return False
-
-        self.rom_path = rom_path
-
-        self.logger.info('Starting Rom: %s' % rom_path)
-        self.logger.info('With Core: %s' % core_path)
-
-        self.logger.error('UNIMPLEMENTED')
-        return False
 
 
     def quit(self):
@@ -227,7 +231,7 @@ class RetroArchPythonApi(object):
             self.logger.exception("")
             return False
         
-        time.sleep(0.5)
+        time.sleep(self.NETWORK_SLEEP_TIME)
         
         if self.is_paused():
             return 'paused'
@@ -237,8 +241,11 @@ class RetroArchPythonApi(object):
             
     def read_core_ram(self, address, length):
         """ read from current core RAM at address length-bytes. Returs an array of bytes. """
-        if not self.is_running():
-            self.logger.error('Rom is not running')
+        
+        # TODO: check self._version -> "Unsupported command by this Retroarch version"
+        
+        if not self.has_content():
+            self.logger.error('No content loaded')
             return []
                 
         self.logger.info('Send: Read core ram')
@@ -262,6 +269,12 @@ class RetroArchPythonApi(object):
             
     
     def write_core_ram(self, address, buf):
+        # TODO: check self._version -> "Unsupported command by this Retroarch version"
+        
+        if not self.has_content():
+            self.logger.error('No content loaded')
+            return False
+            
         """ write into current core RAM from address the array of bytes passed into buf. """
         cmd = b"WRITE_CORE_RAM " + ("%x" % address).encode()
         for b in buf:
@@ -285,10 +298,6 @@ class RetroArchPythonApi(object):
         Returns: False an Error occured
         """
 
-        if not self.is_running():
-            self.logger.error('Rom is not running')
-            return False
-
         self.logger.info('Send: Fullscreen Toggle')
         
         try:
@@ -307,8 +316,8 @@ class RetroArchPythonApi(object):
         """Load a Savestate
         """
 
-        if not self.is_running():
-            self.logger.error('Rom is not running')
+        if not self.has_content():
+            self.logger.error('No content loaded')
             return False
 
         try:
@@ -327,8 +336,8 @@ class RetroArchPythonApi(object):
         Return None: An Error occured
         """
 
-        if not self.is_running():
-            self.logger.error('Rom is not running')
+        if not self.has_content():
+            self.logger.error('No content loaded')
             return False
 
         self.logger.info('Send: Save State')
@@ -346,8 +355,8 @@ class RetroArchPythonApi(object):
 
         """Reset a running Rom and start from beginning"""
 
-        if not self.is_running():
-            self.logger.error('Rom is not running')
+        if not self.has_content():
+            self.logger.error('No content loaded')
             return False
 
         self.logger.info('Send: Reset')
