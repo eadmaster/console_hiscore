@@ -41,15 +41,14 @@ class RetroArchPythonApi(object):
     api.get_content_name()
     api.get_content_crc32_hash()
     """
-    
 
     _socket = None
     _socket_ipaddr = "127.0.0.1"
     _socket_portnum = 55355
-    _version = None
+    _network_sleep_time = 0.1
+    _version = ""
 
-
-    def __init__(self, ipaddr="127.0.0.1", portnum=55355, NETWORK_SLEEP_TIME=0.1):
+    def __init__(self, ipaddr="127.0.0.1", portnum=55355, network_sleep_time=0.1):
 
         # Logging
         self.logger = logging.getLogger('RetroArchPythonApi')
@@ -82,6 +81,7 @@ class RetroArchPythonApi(object):
         # save ipaddr and portnum for later use
         self._socket_ipaddr = ipaddr
         self._socket_portnum = portnum
+        self._network_sleep_time = network_sleep_time
         
         self.logger.info("Checking connection with Retroarch on " + ipaddr + ":" + str(portnum) + "...")
         
@@ -231,7 +231,7 @@ class RetroArchPythonApi(object):
             self.logger.exception("")
             return False
         
-        time.sleep(self.NETWORK_SLEEP_TIME)
+        time.sleep(self._network_sleep_time)
         
         if self.is_paused():
             return 'paused'
@@ -258,7 +258,7 @@ class RetroArchPythonApi(object):
             self.logger.exception("")
             return []
         
-        time.sleep(0.1)
+        time.sleep(self._network_sleep_time)
         
         answer, addr = self._socket.recvfrom(4096) # buffer size is 4096 bytes - MEMO: blocking until something is received
 
@@ -326,7 +326,6 @@ class RetroArchPythonApi(object):
             self.logger.exception("")
             return False
         # else
-        #time.sleep(0.5)
         return True
         
         
@@ -370,7 +369,6 @@ class RetroArchPythonApi(object):
             self.logger.exception("")
             return False
         # else
-        #time.sleep(0.5)
         return True
 
 
