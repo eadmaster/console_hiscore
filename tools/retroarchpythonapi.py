@@ -174,7 +174,7 @@ class RetroArchPythonApi(object):
         except:
             if not self._socket.gettimeout() == 1:
                 self.logger.exception("")
-            return 0
+            return ""
 
 
     def is_alive(self):
