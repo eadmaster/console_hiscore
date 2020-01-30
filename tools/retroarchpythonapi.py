@@ -48,7 +48,7 @@ class RetroArchPythonApi(object):
     _network_sleep_time = 0.1
     _version = ""
 
-    def __init__(self, ipaddr="127.0.0.1", portnum=55355, network_sleep_time=0.1):
+    def __init__(self, ipaddr="127.0.0.1", portnum=55355, network_sleep_time=0.1, check_connection=True):
 
         # Logging
         self.logger = logging.getLogger('RetroArchPythonApi')
@@ -83,6 +83,9 @@ class RetroArchPythonApi(object):
         self._socket_portnum = portnum
         self._network_sleep_time = network_sleep_time
         
+        if not check_connection:
+            return
+    
         self.logger.info("Checking connection with Retroarch on " + ipaddr + ":" + str(portnum) + "...")
         
         # temp. add socket timeout
