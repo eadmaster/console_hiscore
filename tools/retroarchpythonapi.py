@@ -189,7 +189,6 @@ class RetroArchPythonApi(object):
 
 
     def quit(self):
-
         """Exit a running ROM"""
 
         if not self.is_running():
@@ -200,7 +199,7 @@ class RetroArchPythonApi(object):
 
         if self.is_paused():
             self.toggle_pause()
-            time.sleep(0.2)
+            time.sleep(self._network_sleep_time)
 
         try:
             self._socket.sendto(b'QUIT\n', (self._socket_ipaddr, self._socket_portnum))
@@ -213,7 +212,6 @@ class RetroArchPythonApi(object):
 
 
     def toggle_pause(self):
-
         """Toggle from Pause to Unpause mode
         Returns: The new State: "Pause" or "Unpause" Mode
         Returns: False an Error occured
@@ -261,21 +259,22 @@ class RetroArchPythonApi(object):
         time.sleep(self._network_sleep_time)
         
         answer, addr = self._socket.recvfrom(4096) # buffer size is 4096 bytes - MEMO: blocking until something is received
-
-        # TODO: split answer by lines
+        # TODO: read by blocks
+        
         if answer.startswith(b'READ_CORE_RAM'):
             response_bytes = answer.split()[2:]  # from 'READ_CORE_RAM f E5 C4 09 F0 2A 00 00 31 00 01\n'
             return response_bytes
             
     
     def write_core_ram(self, address, buf):
+        """ write into current core RAM from address the array of bytes passed into buf. """
+        
         # TODO: check self._version -> "Unsupported command by this Retroarch version"
         
         if not self.has_content():
             self.logger.error('No content loaded')
             return False
             
-        """ write into current core RAM from address the array of bytes passed into buf. """
         cmd = b"WRITE_CORE_RAM " + ("%x" % address).encode()
         for b in buf:
             cmd += b" %02x" % b
@@ -292,7 +291,6 @@ class RetroArchPythonApi(object):
 
     
     def toggle_fullscreen(self):
-
         """Toggle from Window to Fullscreen mode
         Returns: The new State: "Fullscreen" or "Window" Mode
         Returns: False an Error occured
@@ -312,9 +310,7 @@ class RetroArchPythonApi(object):
 
 
     def load_state(self):
-
-        """Load a Savestate
-        """
+        """ Load currently-selected savestate """
 
         if not self.has_content():
             self.logger.error('No content loaded')
@@ -330,10 +326,7 @@ class RetroArchPythonApi(object):
         
         
     def save_state(self):
-
-        """Saves the State of the current Rom
-        Return None: An Error occured
-        """
+        """ Saves currently-selected savestate """
 
         if not self.has_content():
             self.logger.error('No content loaded')
@@ -351,8 +344,7 @@ class RetroArchPythonApi(object):
 
 
     def reset(self):
-
-        """Reset a running Rom and start from beginning"""
+        """ Reset a running content """
 
         if not self.has_content():
             self.logger.error('No content loaded')
