@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # MEMO: RetroArch >= 1.8.5 is required
-# usage: enable `network_cmd_enable` in retroarch, set the HISCORE_DAT_PATH in state2hi.py
+# usage: enable `network_cmd_enable` in retroarch, set HISCORE_PATH and HISCORE_DAT_PATH in state2hi.py or the environ
 
 import sys
 import os
@@ -49,9 +49,9 @@ while True:
 			system = "nes"
 		elif system == "super_nes":
 			system = "snes"
-		elif system == "game_boy"
+		elif system == "game_boy":
 			system = "gameboy"  # TODO: also try "gbcolor"
-		elif system == "mega_drive"
+		elif system == "mega_drive":
 			system = "genesis"  # TODO: also try "megadriv", "mastersystem", "gamegear", "segacd"
 		# TODO: more systems
 		

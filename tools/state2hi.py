@@ -223,7 +223,6 @@ if __name__ == '__main__':
 	SYSTEM = ""
 	EMU = ""
 
-	print(len(sys.argv))
 	if len(sys.argv) == 2:
 		input_state_filepath = sys.argv[1]
 	if len(sys.argv) == 3:
