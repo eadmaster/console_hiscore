@@ -49,6 +49,10 @@ while True:
 			system = "nes"
 		elif system == "super_nes":
 			system = "snes"
+		elif system == "game_boy"
+			system = "gameboy"  # TODO: also try "gbcolor"
+		elif system == "mega_drive"
+			system = "genesis"  # TODO: also try "megadriv", "mastersystem", "gamegear", "segacd"
 		# TODO: more systems
 		
 		logging.debug("game was changed, read hiscore data for " + system + ", " + curr_content_name + "...")
