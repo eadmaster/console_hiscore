@@ -54,21 +54,20 @@ class RetroArchPythonApi(object):
         self.logger = logging.getLogger('RetroArchPythonApi')
 
         # Settings
-        self.settings = {}
+        #self.settings = {}
         # TODO: read retroarch settings
 
         # Pathes
-        self.pathes = {}
+        #self.pathes = {}
         # TODO: self.pathes['settings'] = "$HOME/.config/retroarch.cfg"
 
         # RetroArch Config File
         #configfile = os.path.join(settings_path, 'retroarch.cfg')
         #self.pathes['configfile'] = configfile
         
-        # initialize a socket, think of it as a cable  
-        # SOCK_DGRAM specifies that this is UDP
+        # UDP socket init
         try:
-            self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) 
+            self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)   # SOCK_DGRAM specifies that this is UDP
             #s.bind((ipaddr, portnum))
             #s.setblocking(0)  # set receive non-blocking.
         except socket.error:  
@@ -251,8 +250,8 @@ class RetroArchPythonApi(object):
                 
         self.logger.info('Send: Read core ram')
         
-        cmd = b"READ_CORE_RAM " + ("%x" % address).encode() + b" " + ("%x" % length).encode() + b'\n'
-        
+        cmd = b"READ_CORE_RAM " + ("%x" % address).encode() + b" " + ("%d" % length).encode() + b'\n'
+
         try:
             self._socket.sendto(cmd, (self._socket_ipaddr, self._socket_portnum))
         except:

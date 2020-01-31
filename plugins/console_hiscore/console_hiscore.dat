@@ -90,7 +90,10 @@ snes,crc32=a5db02e9:
 @:maincpu,program,222,3,00,01
 ; TODO: add options
 
-;WIP:
-;snes,cotton:
-;snes,Marchen Adventure Cotton 100% (J):
-;snes,crc32=5fb7a31d:
+
+snes,cotton:
+snes,Marchen Adventure Cotton 100% (J):
+snes,crc32=5fb7a31d:
+@:maincpu,program,10A,8,00,00
+@:maincpu,program,1E,6E,20,00
+

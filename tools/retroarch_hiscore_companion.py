@@ -38,7 +38,6 @@ while True:
 	
 	# detect game change
 	if curr_content_name != prev_content_name:
-		logging.debug("game was changed, read hiscore data again for " + curr_content_name + "...")
 		prev_content_name = curr_content_name
 		
 		hiscore_inited_in_ram = False
@@ -48,7 +47,11 @@ while True:
 		system = str(retroarch.get_system_id(), 'utf-8')
 		if system == "Nestopia":
 			system = "nes"
+		elif system == "super_nes":
+			system = "snes"
 		# TODO: more systems
+		
+		logging.debug("game was changed, read hiscore data for " + system + ", " + curr_content_name + "...")
 		
 		from state2hi import get_hiscore_rows_from_game
 		# TODO: remove deps
@@ -86,17 +89,21 @@ while True:
 		end_byte = int(splitted_row[5], base=16)
 		
 		response_bytes = retroarch.read_core_ram(address, length)
-		#logging.debug(response_bytes)
-			
-		# check start_byte and end_byte, if the match the code and an hiscore file was read, init the memory
-		if hiscore_file_bytesio.getbuffer().nbytes > 0 and hiscore_inited_in_ram == False and response_bytes and int(response_bytes[0]) == start_byte and int(response_bytes[-1]) == end_byte:
+		#logging.debug(len(response_bytes))
+		#logging.debug(int(response_bytes[0], base=16))
+		#logging.debug(start_byte)
+
+		# 1st loop: check start_byte and end_byte, if the match the code and an hiscore file was read, init the memory
+		if hiscore_file_bytesio.getbuffer().nbytes > 0 and hiscore_inited_in_ram == False and response_bytes and int(response_bytes[0], base=16) == start_byte and int(response_bytes[-1], base=16) == end_byte:
 			logging.info("start_byte and end_byte matches, writing into core memory...")
 			# write data from hiscore_file_bytesio buffer
 			buf = hiscore_file_bytesio.read(length)
-			retroarch.write_core_ram(address, buf)
-			if row == hiscore_rows_to_process[-1]:
-				# TODO: check if all the rows were written
-				hiscore_inited_in_ram = True
+			if retroarch.write_core_ram(address, buf) == True:
+				# successfull memory write
+				curr_hiscore_ram_bytesio.write(buf)
+				if row == hiscore_rows_to_process[-1]:
+					# TODO: check if all the rows were written
+					hiscore_inited_in_ram = True
 		elif response_bytes:
 			# append read bytes to curr_hiscore_ram_bytesio
 			for b in response_bytes:
@@ -105,6 +112,8 @@ while True:
 	
 	# check if hiscore data is changed
 	curr_hiscore_ram_bytesio.flush()
+	#print(curr_hiscore_ram_bytesio.getvalue())
+	#print(hiscore_file_bytesio.getvalue())
 	if curr_hiscore_ram_bytesio.getbuffer().nbytes > 0 and curr_hiscore_ram_bytesio.getvalue() != hiscore_file_bytesio.getvalue():
 		# (over-)write to the hiscore file
 		if not os.path.exists(HISCORE_PATH + "/" + system):

@@ -223,17 +223,22 @@ if __name__ == '__main__':
 	SYSTEM = ""
 	EMU = ""
 
-	if len(sys.argv) > 2:  # TODO: check if invoked from shell -> > 3
-		GAME_NAME = sys.argv[2]
+	print(len(sys.argv))
+	if len(sys.argv) == 2:
+		input_state_filepath = sys.argv[1]
+	if len(sys.argv) == 3:
+		input_state_filepath = sys.argv[2]
 		#GAME_NAME = os.path.splitext(os.path.basename(sys.argv[1]))[0]  # get basename without the extension
 
-		# check if system name was passed with softlist syntax
-		argv2_splitted=sys.argv[2].split(",")
-		if len(argv2_splitted) >= 2:
-			SYSTEM = sys.argv[2].split(",")[0]
-			GAME_NAME = sys.argv[2].split(",")[1]
+	# check if system name was passed with softlist syntax
+	argv2_splitted=input_state_filepath.split(",")
+	if len(argv2_splitted) >= 2:
+		SYSTEM = input_state_filepath.split(",")[0]
+		GAME_NAME = input_state_filepath.split(",")[1]
+	else:
+		GAME_NAME = os.path.splitext(input_state_filepath)[0]  # extract the filename, strip the extension
 
-	statedata = open(sys.argv[1], 'rb').read()
+	statedata = open(input_state_filepath, 'rb').read()
 
 	raw_memory, SYSTEM, EMU = get_raw_memory_from_statedata(statedata)
 
