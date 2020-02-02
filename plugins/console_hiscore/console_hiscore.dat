@@ -93,7 +93,9 @@ snes,crc32=a5db02e9:
 
 snes,cotton:
 snes,Marchen Adventure Cotton 100% (J):
+snes,Maerchen Adventure Cotton 100% (Japan):
 snes,crc32=5fb7a31d:
-@:maincpu,program,10A,8,00,00
-@:maincpu,program,1E,6E,20,00
+@:maincpu,program,1E,72,20,00
+@:maincpu,program,10D,5,00,00
+; TODO: add options
 
