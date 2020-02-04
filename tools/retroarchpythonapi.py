@@ -12,7 +12,7 @@ import time
 import logging
 import socket
 
-__version__ = 0.3
+__version__ = 0.4
 __copyright__ = 'GPL V2'
 
 
@@ -93,6 +93,7 @@ class RetroArchPythonApi(object):
         self._version = self.get_version()
         if not self._version:
             self.logger.warning("Connection timeout: make sure Retroarch is running, has network commands enabled and is connectable (will retry connecting until killed).")
+            #raise Exception("Connection timeout")
         while not self._version:
             self._version = self.get_version()
             time.sleep(2)
@@ -100,13 +101,51 @@ class RetroArchPythonApi(object):
         # remove socket timeout
         self._socket.settimeout(None)
         
-        self.logger.info('Retroarch connection checked')
+        self.logger.info('Retroarch connection ok')
         
-        #TODO:if self._version <= b'1.8.4'
-        # self.logger.warning('Retroarch v1.8.4 does not support GET_STATUS command')
+        retroarch_version_major = self._version.split(b'.')[0]
+        retroarch_version_minor = b".".join(self._version.split(b'.')[1:])
+        if int(retroarch_version_major) == 0 or (int(retroarch_version_major) == 1 and float(retroarch_version_minor) <= 8.4):
+            self.logger.warning('current Retroarch ver. does not support GET_STATUS, SHOW_MSG and GET_CONFIG_PARAM commands. Please update to the lastest ver.')
 
 
-    def _get_status(self):
+    def show_msg(self, msg):
+        """ Shows a message via the OSD """
+        try:
+            self._socket.sendto(b'SHOW_MSG ' + msg.encode('utf-8') + b'\n', (self._socket_ipaddr, self._socket_portnum))
+            return True
+        except:
+            self.logger.exception("")
+            return False
+
+
+    def get_config_param(self, param_name):
+        """ Read a param from the configuration (e.g. 'savefile_directory') """
+        # ver. check to avoid freezing
+        retroarch_version_major = self._version.split(b'.')[0]
+        retroarch_version_minor = b".".join(self._version.split(b'.')[1:])
+        if int(retroarch_version_major) == 0 or (int(retroarch_version_major) == 1 and float(retroarch_version_minor) <= 8.4):
+            self.logger.error('current Retroarch ver. does not support GET_CONFIG_PARAM commands. Please update to the lastest ver.')
+            return ""
+        # else
+        try:
+            self._socket.sendto(b'GET_CONFIG_PARAM '  + param_name.encode('utf-8') + b'\n', (self._socket_ipaddr, self._socket_portnum))
+            response_str, addr = self._socket.recvfrom(4096) # buffer size is 4096 bytes - MEMO: blocking until something is received
+            return response_str.rstrip()
+        except:
+            logging.exception('')
+            return ""
+
+
+    def get_status(self):
+        """ Returns a string summarizing the current status (e.g. 'GET_STATUS PLAYING Nestopia,Super Mario Bros. (W) [!],crc32=3337ec46') """
+        # ver. check to avoid freezing
+        retroarch_version_major = self._version.split(b'.')[0]
+        retroarch_version_minor = b".".join(self._version.split(b'.')[1:])
+        if int(retroarch_version_major) == 0 or (int(retroarch_version_major) == 1 and float(retroarch_version_minor) <= 8.4):
+            self.logger.error('current Retroarch ver. does not support GET_STATUS command. Please update to the lastest ver.')
+            return ""
+        # else
         try:
             self._socket.sendto(b'GET_STATUS\n', (self._socket_ipaddr, self._socket_portnum))
             response_str, addr = self._socket.recvfrom(4096) # buffer size is 4096 bytes - MEMO: blocking until something is received
@@ -118,7 +157,7 @@ class RetroArchPythonApi(object):
 
     def has_content(self):
         """ returns True if the Retroarch has some content loaded (paused or not)"""
-        status_str = self._get_status()
+        status_str = self.get_status()
         splitted_status_str = status_str.split(b",")
         if splitted_status_str[0].split(b" ")[1] == b'CONTENTLESS':
             return False
@@ -128,7 +167,7 @@ class RetroArchPythonApi(object):
 
     def is_paused(self):
         """ returns True if the content is paused """
-        status_str = self._get_status()
+        status_str = self.get_status()
         splitted_status_str = status_str.split(b",")
         if splitted_status_str[0].split(b" ")[1] == b'PAUSED':
             return True
@@ -138,9 +177,10 @@ class RetroArchPythonApi(object):
 
     def is_playing(self):
         """ returns True if the content is running """
-        status_str = self._get_status()
-        splitted_status_str = status_str.split(b",")
-        if splitted_status_str[0].split(b" ")[1] == b'RUNNING':
+        
+        splitted_status_str = self.get_status().split(b",")
+        status_str = splitted_status_str[0].split(b" ")[1]
+        if status_str == b'RUNNING' or status_str == b'PLAYING':
             return True
         else:
             return False
@@ -148,21 +188,21 @@ class RetroArchPythonApi(object):
 
     def get_system_id(self):
         """ returns current system_id (e.g. 'nes') or the core name (e.g. 'Nestopia') """
-        status_str = self._get_status()
+        status_str = self.get_status()
         splitted_status_str = status_str.split(b",")
         return splitted_status_str[0].split(b" ")[-1]
         
         
     def get_content_name(self):
         """ returns current content name, from the ROM filename (e.g. 'Super Mario Bros. (W) [!]') """
-        status_str = self._get_status()
+        status_str = self.get_status()
         splitted_status_str = status_str.split(b",")
         return splitted_status_str[1]
             
 
     def get_content_crc32_hash(self):
         """ returns current content CRC32 hash as a string """
-        status_str = self._get_status()
+        status_str = self.get_status()
         splitted_status_str = status_str.split(b",")
         return splitted_status_str[2].split(b"=")[1]
     
@@ -242,7 +282,13 @@ class RetroArchPythonApi(object):
     def read_core_ram(self, address, length):
         """ read from current core RAM at address length-bytes. Returs an array of bytes. """
         
-        # TODO: check self._version -> "Unsupported command by this Retroarch version"
+        # ver. check to avoid freezing
+        retroarch_version_major = self._version.split(b'.')[0]
+        retroarch_version_minor = b".".join(self._version.split(b'.')[1:])
+        if int(retroarch_version_major) == 0 or (int(retroarch_version_major) == 1 and float(retroarch_version_minor) <= 8.4):
+            self.logger.warning('current Retroarch ver. does not support READ_CORE_RAM command. Please update to the lastest ver.')
+            return ""
+        # else
         
         if not self.has_content():
             self.logger.error('No content loaded')
