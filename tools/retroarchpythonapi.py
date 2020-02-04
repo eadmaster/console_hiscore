@@ -126,15 +126,16 @@ class RetroArchPythonApi(object):
         retroarch_version_minor = b".".join(self._version.split(b'.')[1:])
         if int(retroarch_version_major) == 0 or (int(retroarch_version_major) == 1 and float(retroarch_version_minor) <= 8.4):
             self.logger.error('current Retroarch ver. does not support GET_CONFIG_PARAM commands. Please update to the lastest ver.')
-            return ""
+            return b""
         # else
         try:
             self._socket.sendto(b'GET_CONFIG_PARAM '  + param_name.encode('utf-8') + b'\n', (self._socket_ipaddr, self._socket_portnum))
             response_str, addr = self._socket.recvfrom(4096) # buffer size is 4096 bytes - MEMO: blocking until something is received
-            return response_str.rstrip()
+            param_value = response_str.split()[2]
+            return param_value
         except:
             logging.exception('')
-            return ""
+            return b""
 
 
     def get_status(self):
@@ -144,7 +145,7 @@ class RetroArchPythonApi(object):
         retroarch_version_minor = b".".join(self._version.split(b'.')[1:])
         if int(retroarch_version_major) == 0 or (int(retroarch_version_major) == 1 and float(retroarch_version_minor) <= 8.4):
             self.logger.error('current Retroarch ver. does not support GET_STATUS command. Please update to the lastest ver.')
-            return ""
+            return b""
         # else
         try:
             self._socket.sendto(b'GET_STATUS\n', (self._socket_ipaddr, self._socket_portnum))
@@ -152,14 +153,14 @@ class RetroArchPythonApi(object):
             return response_str.rstrip()
         except:
             logging.exception('')
-            return ""
+            return b""
 
 
     def has_content(self):
         """ returns True if the Retroarch has some content loaded (paused or not)"""
         status_str = self.get_status()
         splitted_status_str = status_str.split(b",")
-        if splitted_status_str[0].split(b" ")[1] == b'CONTENTLESS':
+        if status_str==b"" or splitted_status_str[0].split(b" ")[1] == b'CONTENTLESS':
             return False
         else:
             return True
@@ -169,7 +170,7 @@ class RetroArchPythonApi(object):
         """ returns True if the content is paused """
         status_str = self.get_status()
         splitted_status_str = status_str.split(b",")
-        if splitted_status_str[0].split(b" ")[1] == b'PAUSED':
+        if status_str==b"" or splitted_status_str[0].split(b" ")[1] == b'PAUSED':
             return True
         else:
             return False
@@ -177,10 +178,10 @@ class RetroArchPythonApi(object):
 
     def is_playing(self):
         """ returns True if the content is running """
-        
+        status_str = self.get_status()
         splitted_status_str = self.get_status().split(b",")
-        status_str = splitted_status_str[0].split(b" ")[1]
-        if status_str == b'RUNNING' or status_str == b'PLAYING':
+        status = splitted_status_str[0].split(b" ")[1]
+        if status_str==b"" or  status == b'RUNNING' or status == b'PLAYING':
             return True
         else:
             return False

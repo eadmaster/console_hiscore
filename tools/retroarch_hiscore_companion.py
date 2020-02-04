@@ -10,15 +10,19 @@ import logging
 import time
 from io import BytesIO
 
-# path where .hi files will be loaded and saved
-HISCORE_PATH = os.path.expanduser("~/.mame/hi")
-if("HISCORE_PATH" in os.environ):
-    HISCORE_PATH = os.environ['HISCORE_PATH']
+
+HISCORE_PATH_USE_SUBDIRS=False
 
 logging.getLogger().setLevel(logging.DEBUG)
 
 from retroarchpythonapi import RetroArchPythonApi
 retroarch = RetroArchPythonApi()
+
+# path where .hi files will be loaded and saved
+HISCORE_PATH = retroarch.get_config_param('savefile_directory')  # store hiscores in savefile_directory by default
+#HISCORE_PATH = os.path.expanduser("~/.mame/hi")
+if("HISCORE_PATH" in os.environ):
+    HISCORE_PATH = os.environ['HISCORE_PATH']
 
 hiscore_inited_in_ram = False
 prev_content_name = None
@@ -43,7 +47,6 @@ while True:
 		hiscore_inited_in_ram = False
 		
 		# detect the system from the core name
-		
 		system = str(retroarch.get_system_id(), 'utf-8')
 		if system == "Nestopia":
 			system = "nes"
@@ -66,7 +69,11 @@ while True:
 		
 		# try to read the .hi hiscore file
 		hiscore_file_data = None
-		hiscore_file_path = HISCORE_PATH + "/" + system + "/" + curr_content_name + ".hi"
+		if HISCORE_PATH_USE_SUBDIRS:
+			hiscore_file_path = HISCORE_PATH + "/" + system + "/" + curr_content_name + ".hi"
+		else:
+			hiscore_file_path = HISCORE_PATH + "/" + curr_content_name + ".hi"
+		
 		try:
 			hiscore_file = open(hiscore_file_path, 'rb')
 			hiscore_file_data = hiscore_file.read()
@@ -108,6 +115,7 @@ while True:
 				if row == hiscore_rows_to_process[-1]:
 					# TODO: check if all the rows were written
 					hiscore_inited_in_ram = True
+					retroarch.show_msg("Hiscore loaded")
 		elif response_bytes:
 			# append read bytes to curr_hiscore_ram_bytesio
 			for b in response_bytes:
@@ -120,13 +128,17 @@ while True:
 	#print(hiscore_file_bytesio.getvalue())
 	if curr_hiscore_ram_bytesio.getbuffer().nbytes > 0 and curr_hiscore_ram_bytesio.getvalue() != hiscore_file_bytesio.getvalue():
 		# (over-)write to the hiscore file
-		if not os.path.exists(HISCORE_PATH + "/" + system):
+		if HISCORE_PATH_USE_SUBDIRS and not os.path.exists(HISCORE_PATH + "/" + system):
 			os.mkdir(HISCORE_PATH + "/" + system)
+		if not os.path.isfile(HISCORE_PATH):
+			# show msg only at the 1st save
+			retroarch.show_msg("Hiscore file creates")
 		hiscore_file = open(hiscore_file_path, 'wb') # write+binary mode
 		hiscore_file.write(curr_hiscore_ram_bytesio.getvalue())
 		hiscore_file.close()
 		hiscore_file_bytesio = curr_hiscore_ram_bytesio  # keep the reference in memory
 		logging.info("written hiscore file " + hiscore_file_path)
+		#NO? retroarch.show_msg("Hiscore saved")  # too many alerts?
 	else:
 		logging.debug("hiscore data unchanged in memory, nothing to save")
 	
