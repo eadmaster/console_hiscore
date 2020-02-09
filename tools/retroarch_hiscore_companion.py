@@ -16,7 +16,14 @@ HISCORE_PATH_USE_SUBDIRS=False
 logging.getLogger().setLevel(logging.DEBUG)
 
 from retroarchpythonapi import RetroArchPythonApi
-retroarch = RetroArchPythonApi()
+while True:
+	try:
+		retroarch = RetroArchPythonApi()
+		break
+	except:
+		logging.error("connection error, will retry in 2s...")
+		time.sleep(2)
+# end while
 
 # path where .hi files will be loaded and saved
 HISCORE_PATH = retroarch.get_config_param('savefile_directory')  # store hiscores in savefile_directory by default
@@ -47,22 +54,23 @@ while True:
 		hiscore_inited_in_ram = False
 		
 		# detect the system from the core name
-		system = str(retroarch.get_system_id(), 'utf-8')
-		if system == "Nestopia":
-			system = "nes"
-		elif system == "super_nes":
-			system = "snes"
-		elif system == "game_boy":
-			system = "gameboy"  # TODO: also try "gbcolor"
-		elif system == "mega_drive":
-			system = "genesis"  # TODO: also try "megadriv", "mastersystem", "gamegear", "segacd"
-		# TODO: more systems
+		reported_system_id = str(retroarch.get_system_id(), 'utf-8')
+		candidate_systems = []
+		if reported_system_id in [ "Nestopia", "nes" ]:
+			candidate_systems = [ "nes", "famicom", "fds", "nespal" ]
+		elif reported_system_id == "super_nes":
+			candidate_systems = [ "snes", "snespal" ]
+		elif reported_system_id == "game_boy":
+			candidate_systems = [ "gameboy", "gbcolor", "supergb" ]
+		elif reported_system_id == "mega_drive":
+			candidate_systems = [ "genesis", "megadrij", "megadriv", "sms", "smsj", "smspal", "gamegear", "gamegeaj", "segacd" ]
+		# TODO: more systems  http://www.progettoemma.net/mess/sysset.php
 		
-		logging.debug("game was changed, read hiscore data for " + system + ", " + curr_content_name + "...")
+		logging.debug("game was changed, looking hiscore data for " + curr_content_name + "...")
 		
 		from state2hi import get_hiscore_rows_from_game
 		# TODO: remove deps
-		hiscore_rows_to_process = get_hiscore_rows_from_game(system, curr_content_name)
+		hiscore_rows_to_process = get_hiscore_rows_from_game(candidate_systems, curr_content_name)
 		if len(hiscore_rows_to_process)==0:
 			logging.error("nothing found in hiscore.dat for current game")
 			continue
@@ -132,7 +140,7 @@ while True:
 			os.mkdir(HISCORE_PATH + "/" + system)
 		if not os.path.isfile(HISCORE_PATH):
 			# show msg only at the 1st save
-			retroarch.show_msg("Hiscore file creates")
+			retroarch.show_msg("Hiscore file created")
 		hiscore_file = open(hiscore_file_path, 'wb') # write+binary mode
 		hiscore_file.write(curr_hiscore_ram_bytesio.getvalue())
 		hiscore_file.close()

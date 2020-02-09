@@ -7,16 +7,24 @@ import sys
 import os
 import logging
 
-logging.getLogger().setLevel(logging.DEBUG)
-
+DEBUG=False
+if DEBUG:
+	logging.getLogger().setLevel(logging.DEBUG)
+else:
+	logging.getLogger().setLevel(logging.INFO)
+	
 HISCORE_DAT_PATH="/usr/share/games/mame/plugins/console_hiscore/console_hiscore.dat"
 if("HISCORE_DAT_PATH" in os.environ):
     HISCORE_DAT_PATH = os.environ['HISCORE_DAT_PATH']
 
 def get_raw_memory_from_statedata(statedata):
+	"""
+	return a tuple: raw_memory (bytes buffer), candidate systems (list), emulator (str)
+	"""
+	
 	raw_memory = None
-	SYSTEM = None
-	EMU = None
+	candidate_systems = []
+	emulator = None
 	
 	# switch on file header
 
@@ -37,8 +45,8 @@ def get_raw_memory_from_statedata(statedata):
 	# Nestopia
 	# MEMO: savestates are swappable between retroarch and vanilla Nestopia (just rename *.state -> *.nst)
 	if statedata[0:3] == b'NST':
-		SYSTEM = "nes"
-		EMU = "nestopia"
+		emulator = "nestopia"
+		candidate_systems = [ "nes", "famicom", "fds", "nespal" ]
 		raw_memory = statedata[0x38:]  # skip 56 bytes header
 	# end of Nestopia
 
@@ -49,8 +57,8 @@ def get_raw_memory_from_statedata(statedata):
 	# FCEUmm  https://github.com/libretro/libretro-fceumm/blob/master/src/state.c
 	elif statedata.startswith(b'FCS\xFF'):
 		logging.warning("FCEU support is still WIP")
-		SYSTEM = "nes"
-		EMU = "fceu"
+		emulator = "fceu"
+		candidate_systems = [ "nes", "famicom", "fds", "nespal" ]
 		raw_memory = statedata[0x5D:]  # 2FIX: sometimes 0x56, 0x57
 	# end of FCEU
 
@@ -60,42 +68,40 @@ def get_raw_memory_from_statedata(statedata):
 	#print(len(b'\x00\x01\x00\x00\x00\x61\x00\x00\x00\x01\x00\x62\x00\x00\x00\x01'))
 	elif statedata.startswith(b'\x00\x01\x00\x00\x00\x61\x00\x00\x00\x01\x00\x62\x00\x00\x00\x01'):
 		logging.warning("Gambatte support is still WIP")
-		SYSTEM = "gameboy"
-		EMU = "gambatte"
-		# TODO: "gbcolor"
+		emulator = "gambatte"
+		candidate_systems = [ "gameboy", "gbcolor", "supergb" ]
+		# TODO: detect/exclude "gbcolor"?
 		raw_memory = statedata  # no header to skip?
 		# TODO: test with games different from tetris
 	# end of Gambatte
 
 	# Snes9x latest  https://github.com/snes9xgit/snes9x/blob/master/snapshot.cpp
 	elif statedata.startswith(b'#!s9xsnp:0011'):
-		SYSTEM = "snes"
-		EMU = "snes9x"
+		emulator = "snes9x"
+		candidate_systems = [ "snes", "snespal" ]
 		raw_memory = statedata[0x10B99:]  # system RAM starts after the "RAM:------:" string
 
 	elif statedata.startswith(b'#!s9xsnp:0010'):
-		# UNTESTED
-		SYSTEM = "snes"
-		EMU = "snes9x2018"
+		emulator = "snes9x2018"
+		candidate_systems = [ "snes", "snespal" ]
 		raw_memory = statedata[0x10B96:]  # system RAM starts after the "RAM:------:" string
 
 	elif statedata.startswith(b'#!s9xsnp:0006'):
-		# UNTESTED
-		SYSTEM = "snes"
-		EMU = "snes9x2010"
+		emulator = "snes9x2010"
+		candidate_systems = [ "snes", "snespal" ]
 		raw_memory = statedata[0x10B89:]  # system RAM starts after the "RAM:------:" string
 
 	# Snes9x2002 / pocketsnes  https://github.com/libretro/snes9x2002/blob/master/src/snapshot.c
 	elif statedata.startswith(b'#!snes9x:0001'):
-		SYSTEM = "snes"
-		EMU = "snes9x2002"
+		emulator = "snes9x2002"
+		candidate_systems = [ "snes", "snespal" ]
 		raw_memory = statedata[0x10C64:]  # system RAM starts after the "RAM:------:" string
 	# end of Snes9x
 
 	# TODO: ZSNES https://github.com/ericpearson/zsnes/blob/cport/src/zstate.c
 	# elif statedata.startswith(b'#!snes9x:0001'):
-	# 	SYSTEM = "snes"
-	# 	EMU = "zsnes"
+	# 	emulator = "zsnes"
+	# 	candidate_systems = [ "snes", "snespal" ]
 	# 	raw_memory = statedata[0x10C64:]
 	# end of Snes9x
 
@@ -104,17 +110,17 @@ def get_raw_memory_from_statedata(statedata):
 	#elif statedata[0x15:0x19] == b'BST1':  # old compressed saves?
 	#elif statedata.startswith(b'BST1'):
 		logging.warning("bsnes support is still WIP")
-		SYSTEM = "snes"
-		EMU = "bsnes"
+		emulator = "bsnes"
+		candidate_systems = [ "snes", "snespal" ]
 		raw_memory = statedata[0x21C:]
 	# end of bsnes
 
 	# Genesis-Plus-GX  https://github.com/ekeeke/Genesis-Plus-GX/blob/master/core/state.c
 	elif statedata.startswith(b'GENPLUS-GX'):
 		logging.warning("GENPLUS-GX support is still WIP")
+		emulator = "genplus"
+		candidate_systems = [ "genesis", "megadrij", "megadriv", "sms", "smsj", "smspal", "gamegear", "gamegeaj", "segacd" ]
 		raw_memoryswapped = statedata[16:]  # TODO: cut end ram
-		SYSTEM = "genesis"
-		EMU = "genplus"
 		# TODO: detect sms+gamegear
 		#if SYSTEM in ["sms", "gamegear"]:
 		#	raw_memory = statedata[16:0x200F]
@@ -132,8 +138,10 @@ def get_raw_memory_from_statedata(statedata):
 		#print("flags: " + str(statedata[9])) # TODO: parse
 		#print("game name: " + str(statedata[0x0A:0x1B], 'utf-8'))
 		SYSTEM = (statedata[0x0A:0x1B]).decode().replace('\x00', '')
-		GAME_NAME = SYSTEM
+		#GAME_NAME = SYSTEM
 		#print("signature: " + str(statedata[0x1C:0x1F]))
+		emulator = "mame"
+		candidate_systems = [ SYSTEM ]
 
 		savegamedata_compressed = statedata[0x20:]
 		# MEMO: Data is always written as native-endian.
@@ -169,19 +177,19 @@ def get_raw_memory_from_statedata(statedata):
 		# https://wiki.mamedev.org/index.php/Save_State_Fundamentals
 		# TODO: raw_memory = raw_memory[???]
 		logging.error("MAME is unsupported, please check the mame_mkhiscoredebugscript.py")
-		return None
+		return None, None, None
 		
 	# TODO: more cores
 
 	if raw_memory == None:
 		logging.error("emulator not supported")
-		return None
+		return None, None, None
 	else:
-		return raw_memory, SYSTEM, EMU
+		return raw_memory, candidate_systems, emulator
 # end of get_raw_memory_from_statedata
 
 
-def get_hiscore_rows_from_game(SYSTEM, GAME_NAME):
+def get_hiscore_rows_from_game(candidate_systems, GAME_NAME):
 	hiscore_file = open(HISCORE_DAT_PATH)
 	rows = []
 	while(True):
@@ -199,28 +207,30 @@ def get_hiscore_rows_from_game(SYSTEM, GAME_NAME):
 		if line.endswith(":"):
 			# check if game matches
 			line_gamename = line.split(':')[0]
-			if not line_gamename == SYSTEM + "," + GAME_NAME:
-				continue
-			# else reads the hiscore rows
-			while(True):
-				line = hiscore_file.readline()
-				if line.strip() == "":
-					# end of codes
-					break
-				if not line.startswith("@"):
-					# comments?
-					continue
-				# else
-				rows.append(line.strip())
-			# end while
-		# end if
-	# end while
+			for SYSTEM in candidate_systems:
+				if line_gamename == SYSTEM + "," + GAME_NAME:
+					# read the hiscore rows
+					while(True):
+						line = hiscore_file.readline()
+						if line.strip() == "":
+							# end of codes
+							break
+						if not line.startswith("@"):
+							# comments?
+							continue
+						# else
+						rows.append(line.strip())
+					# end while (hiscore rows)
+				# end if (game matches)
+			# end for candidate_systems
+		# end if line.endswith(":")
+	# end while hiscore_file lines
 	return rows
 # end of get_hiscore_rows_from_game
 
 
 if __name__ == '__main__':
-	SYSTEM = ""
+	candidate_systems = []
 	EMU = ""
 
 	if len(sys.argv) == 2:
@@ -230,26 +240,27 @@ if __name__ == '__main__':
 		#GAME_NAME = os.path.splitext(os.path.basename(sys.argv[1]))[0]  # get basename without the extension
 
 	# check if system name was passed with softlist syntax
-	argv2_splitted=input_state_filepath.split(",")
-	if len(argv2_splitted) >= 2:
-		SYSTEM = input_state_filepath.split(",")[0]
+	argv_splitted=input_state_filepath.split(",")
+	if len(argv_splitted) >= 2:
+		candidate_systems = [ input_state_filepath.split(",")[0] ]
 		GAME_NAME = input_state_filepath.split(",")[1]
 	else:
-		GAME_NAME = os.path.splitext(input_state_filepath)[0]  # extract the filename, strip the extension
+		GAME_NAME = os.path.splitext(os.path.basename(input_state_filepath))[0]  # extract the filename, strip the extension
 
 	statedata = open(input_state_filepath, 'rb').read()
 
-	raw_memory, SYSTEM, EMU = get_raw_memory_from_statedata(statedata)
+	raw_memory, candidate_systems, EMU = get_raw_memory_from_statedata(statedata)
 
-	logging.info("detected system: " + SYSTEM)
+	logging.info("detected system(s): " + str(candidate_systems))
 	logging.info("detected emulator: " + EMU)
 	logging.info("detected game: " + GAME_NAME)
 
-	#OUTFILE_PATH=GAME_NAME + ".raw"
-	#outfile = open(OUTFILE_PATH, "wb")
-	#outfile.write(raw_memory)
+	if DEBUG:
+		OUTFILE_PATH=GAME_NAME + ".raw"
+		outfile = open(OUTFILE_PATH, "wb")
+		outfile.write(raw_memory)
 	
-	hiscore_rows_to_process = get_hiscore_rows_from_game(SYSTEM, GAME_NAME)
+	hiscore_rows_to_process = get_hiscore_rows_from_game(candidate_systems, GAME_NAME)
 	if len(hiscore_rows_to_process)==0:
 		logging.error("nothing found in hiscore.dat for current game")
 		sys.exit(1)

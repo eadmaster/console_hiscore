@@ -3,8 +3,8 @@
 This is a Python API for the RetroArch /
 libretro Libraries for Console Emulators
 
-Derived and mostly compatible with  https://github.com/merlink01/RetroArchPythonAPI/
-added python3 support and made network-based by eadmaster
+Derived and still mostly compatible with  https://github.com/merlink01/RetroArchPythonAPI/
+Added python3 support and made network-based by eadmaster
 """
 
 import os
@@ -12,7 +12,7 @@ import time
 import logging
 import socket
 
-__version__ = 0.4
+__version__ = 0.5
 __copyright__ = 'GPL V2'
 
 
@@ -23,6 +23,7 @@ class RetroArchPythonApi(object):
     from retroarchpythonapi import RetroArchPythonApi
     api = RetroArchPythonApi()
     
+    api.show_msg("Hello world!")
     api.toggle_pause()
     api.save_state()
     api.load_state()
@@ -37,9 +38,12 @@ class RetroArchPythonApi(object):
     api.is_paused() # true if has some content loaded and it IS paused
     api.is_playing()  # true if has some content loaded and it IS NOT paused
     api.get_version()
-    api.get_system_id()
-    api.get_content_name()
-    api.get_content_crc32_hash()
+    api.get_system_id()  # returns a string like "nes"
+    api.get_content_name()  # returns a string like "Super Mario Bros. (W) [!]"
+    api.get_content_crc32_hash()  # returns a string like "d445f698"
+    api.get_config_param('savefile_directory')  # read a config param (not all the params are supported!)
+    
+    # all the methods returns a true value on success, or thow exceptions on errors.
     """
 
     _socket = None
@@ -66,16 +70,11 @@ class RetroArchPythonApi(object):
         #self.pathes['configfile'] = configfile
         
         # UDP socket init
-        try:
-            self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)   # SOCK_DGRAM specifies that this is UDP
-            #s.bind((ipaddr, portnum))
-            #s.setblocking(0)  # set receive non-blocking.
-        except socket.error:  
-            self.logger.error('failed to create UDP socket with Retroarch')
-            logging.exception('')
-            sys.exit(1)
-        else:
-            logging.info('Retroarch UDP socket connected')
+        self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)   # SOCK_DGRAM specifies that this is UDP
+        #s.bind((ipaddr, portnum))
+        #s.setblocking(0)  # set receive non-blocking.
+
+        logging.info('Retroarch UDP socket created')
         
         # save ipaddr and portnum for later use
         self._socket_ipaddr = ipaddr
@@ -92,11 +91,12 @@ class RetroArchPythonApi(object):
         
         self._version = self.get_version()
         if not self._version:
-            self.logger.warning("Connection timeout: make sure Retroarch is running, has network commands enabled and is connectable (will retry connecting until killed).")
+            self.logger.error("Connection timeout: make sure Retroarch is running, has network commands enabled and is connectable.")
+            #self.logger.warning("Connection timeout: make sure Retroarch is running, has network commands enabled and is connectable (will retry connecting until killed).")
             #raise Exception("Connection timeout")
-        while not self._version:
-            self._version = self.get_version()
-            time.sleep(2)
+        #while not self._version:
+        #    self._version = self.get_version()
+        #    time.sleep(2)
 
         # remove socket timeout
         self._socket.settimeout(None)
@@ -111,12 +111,8 @@ class RetroArchPythonApi(object):
 
     def show_msg(self, msg):
         """ Shows a message via the OSD """
-        try:
-            self._socket.sendto(b'SHOW_MSG ' + msg.encode('utf-8') + b'\n', (self._socket_ipaddr, self._socket_portnum))
-            return True
-        except:
-            self.logger.exception("")
-            return False
+        self._socket.sendto(b'SHOW_MSG ' + msg.encode('utf-8') + b'\n', (self._socket_ipaddr, self._socket_portnum))
+        return True
 
 
     def get_config_param(self, param_name):
@@ -128,14 +124,13 @@ class RetroArchPythonApi(object):
             self.logger.error('current Retroarch ver. does not support GET_CONFIG_PARAM commands. Please update to the lastest ver.')
             return b""
         # else
-        try:
-            self._socket.sendto(b'GET_CONFIG_PARAM '  + param_name.encode('utf-8') + b'\n', (self._socket_ipaddr, self._socket_portnum))
-            response_str, addr = self._socket.recvfrom(4096) # buffer size is 4096 bytes - MEMO: blocking until something is received
-            param_value = response_str.split()[2]
-            return param_value
-        except:
-            logging.exception('')
-            return b""
+        self._socket.sendto(b'GET_CONFIG_PARAM '  + param_name.encode('utf-8') + b'\n', (self._socket_ipaddr, self._socket_portnum))
+        response_str, addr = self._socket.recvfrom(4096) # buffer size is 4096 bytes - MEMO: blocking until something is received
+        param_value = response_str.split()[2]
+        if param_value == "unsupported":
+            raise Exception("unsupported param: " + param_name)
+        # else
+        return param_value
 
 
     def get_status(self):
@@ -147,13 +142,10 @@ class RetroArchPythonApi(object):
             self.logger.error('current Retroarch ver. does not support GET_STATUS command. Please update to the lastest ver.')
             return b""
         # else
-        try:
-            self._socket.sendto(b'GET_STATUS\n', (self._socket_ipaddr, self._socket_portnum))
-            response_str, addr = self._socket.recvfrom(4096) # buffer size is 4096 bytes - MEMO: blocking until something is received
-            return response_str.rstrip()
-        except:
-            logging.exception('')
-            return b""
+
+        self._socket.sendto(b'GET_STATUS\n', (self._socket_ipaddr, self._socket_portnum))
+        response_str, addr = self._socket.recvfrom(4096) # buffer size is 4096 bytes - MEMO: blocking until something is received
+        return response_str.rstrip()
 
 
     def has_content(self):
@@ -210,31 +202,28 @@ class RetroArchPythonApi(object):
     
     def get_version(self):
         """ returns current Retroarch version (as a string) """
-        try:
-            self._socket.sendto(b'VERSION\n', (self._socket_ipaddr, self._socket_portnum))
-            response_str, addr = self._socket.recvfrom(16)
-            return response_str.rstrip()
-        except:
-            if not self._socket.gettimeout() == 1:
-                self.logger.exception("")
-            return ""
+        self._socket.sendto(b'VERSION\n', (self._socket_ipaddr, self._socket_portnum))
+        response_str, addr = self._socket.recvfrom(16)
+        return response_str.rstrip()
 
 
     def is_alive(self):
         """ returns True if Retroarch is running and connectable """
         self._socket.settimeout(1)  # temp. add socket timeout
-        v = self.get_version()
-        self._socket.settimeout(None)  # remove socket timeout
-        if v:
+        try:
+            v = self.get_version()
             return True
-        else:
+        except:
+            # timeout
             return False
+        finally:
+            self._socket.settimeout(None)  # remove socket timeout
 
 
     def quit(self):
         """Exit a running ROM"""
 
-        if not self.is_running():
+        if not self.has_content():
             self.logger.error('Rom is not running')
             return False
 
@@ -244,12 +233,8 @@ class RetroArchPythonApi(object):
             self.toggle_pause()
             time.sleep(self._network_sleep_time)
 
-        try:
-            self._socket.sendto(b'QUIT\n', (self._socket_ipaddr, self._socket_portnum))
-        except:
-            self.logger.exception("")
-            return False
-
+        self._socket.sendto(b'QUIT\n', (self._socket_ipaddr, self._socket_portnum))
+        # if no socket error assume the command was successful
         self.logger.info('Rom Exited Successfull')
         return True
 
@@ -260,17 +245,14 @@ class RetroArchPythonApi(object):
         Returns: False an Error occured
         """
 
-        if not self.is_running():
+        if not self.has_content():
             self.logger.error('Rom is not running')
             return False
 
         self.logger.info('Send: Toggle Pause')
 
-        try:
-            self._socket.sendto(b'PAUSE_TOGGLE\n', (self._socket_ipaddr, self._socket_portnum))
-        except:
-            self.logger.exception("")
-            return False
+        self._socket.sendto(b'PAUSE_TOGGLE\n', (self._socket_ipaddr, self._socket_portnum))
+        # if no socket error assume the command was successful
         
         time.sleep(self._network_sleep_time)
         
@@ -287,7 +269,7 @@ class RetroArchPythonApi(object):
         retroarch_version_major = self._version.split(b'.')[0]
         retroarch_version_minor = b".".join(self._version.split(b'.')[1:])
         if int(retroarch_version_major) == 0 or (int(retroarch_version_major) == 1 and float(retroarch_version_minor) <= 8.4):
-            self.logger.warning('current Retroarch ver. does not support READ_CORE_RAM command. Please update to the lastest ver.')
+            self.logger.error('current Retroarch ver. does not support READ_CORE_RAM command. Please update to the lastest ver.')
             return ""
         # else
         
@@ -299,11 +281,8 @@ class RetroArchPythonApi(object):
         
         cmd = b"READ_CORE_RAM " + ("%x" % address).encode() + b" " + ("%d" % length).encode() + b'\n'
 
-        try:
-            self._socket.sendto(cmd, (self._socket_ipaddr, self._socket_portnum))
-        except:
-            self.logger.exception("")
-            return []
+        self._socket.sendto(cmd, (self._socket_ipaddr, self._socket_portnum))
+        # if no socket error assume the command was successful
         
         time.sleep(self._network_sleep_time)
         
@@ -313,13 +292,20 @@ class RetroArchPythonApi(object):
         if answer.startswith(b'READ_CORE_RAM'):
             response_bytes = answer.split()[2:]  # from 'READ_CORE_RAM f E5 C4 09 F0 2A 00 00 31 00 01\n'
             return response_bytes
+        else:
+            raise Exception("invalid answer: " + str(answer))
             
     
     def write_core_ram(self, address, buf):
         """ write into current core RAM from address the array of bytes passed into buf. """
         
-        # TODO: check self._version -> "Unsupported command by this Retroarch version"
-        
+        # ver. check
+        retroarch_version_major = self._version.split(b'.')[0]
+        retroarch_version_minor = b".".join(self._version.split(b'.')[1:])
+        if int(retroarch_version_major) == 0 or (int(retroarch_version_major) == 1 and float(retroarch_version_minor) <= 8.4):
+            self.logger.error('current Retroarch ver. does not support WRITE_CORE_RAM command. Please update to the lastest ver.')
+            return False
+            
         if not self.has_content():
             self.logger.error('No content loaded')
             return False
@@ -330,33 +316,31 @@ class RetroArchPythonApi(object):
         cmd += b"\n"
         self.logger.debug('Sending: ' + str(cmd))  # e.g. b"WRITE_CORE_RAM f E5 C4 09 F0 2A 00 00 31 00 01\n"
 
-        try:
-            self._socket.sendto(cmd, (self._socket_ipaddr, self._socket_portnum))
-        except:
-            self.logger.exception("")
-            return False
-        # else
+        self._socket.sendto(cmd, (self._socket_ipaddr, self._socket_portnum))
+        # if no socket error assume the command was successful
         return True
 
     
     def toggle_fullscreen(self):
         """Toggle from Window to Fullscreen mode
-        Returns: The new State: "Fullscreen" or "Window" Mode
-        Returns: False an Error occured
+        #Returns: The new State: "Fullscreen" or "Window" Mode
+        #Returns: False an Error occured
         """
 
         self.logger.info('Send: Fullscreen Toggle')
         
-        try:
-            self._socket.sendto(b'FULLSCREEN_TOGGLE\n', (self._socket_ipaddr, self._socket_portnum))
-        except:
-            self.logger.exception("")
-            return False
-        # else
-        #time.sleep(0.5)
-        # TODO: return current fullscreen status
-        return True
-
+        self._socket.sendto(b'FULLSCREEN_TOGGLE\n', (self._socket_ipaddr, self._socket_portnum))
+        # if no socket error assume the command was successful
+        
+        time.sleep(self._network_sleep_time)
+        
+        # read current fullscreen status
+        video_fullscreen_status = self.get_config_param("video_fullscreen")
+        if video_fullscreen_status == b"true":
+            return("Fullscreen")
+        else:
+            return("Window")
+    
 
     def load_state(self):
         """ Load currently-selected savestate """
@@ -365,12 +349,8 @@ class RetroArchPythonApi(object):
             self.logger.error('No content loaded')
             return False
 
-        try:
-            self._socket.sendto(b'LOAD_STATE\n', (self._socket_ipaddr, self._socket_portnum))
-        except:
-            self.logger.exception("")
-            return False
-        # else
+        self._socket.sendto(b'LOAD_STATE\n', (self._socket_ipaddr, self._socket_portnum))
+        # if no socket error assume the command was successful
         return True
         
         
@@ -383,12 +363,8 @@ class RetroArchPythonApi(object):
 
         self.logger.info('Send: Save State')
 
-        try:
-            self._socket.sendto(b'SAVE_STATE\n', (self._socket_ipaddr, self._socket_portnum))
-        except:
-            self.logger.exception("")
-            return False
-        # else
+        self._socket.sendto(b'SAVE_STATE\n', (self._socket_ipaddr, self._socket_portnum))
+        # if no socket error assume the command was successful
         return True
 
 
@@ -404,12 +380,8 @@ class RetroArchPythonApi(object):
         if self.is_paused():
             self.toggle_pause()
 
-        try:
-            self._socket.sendto(b'RESET\n', (self._socket_ipaddr, self._socket_portnum))
-        except:
-            self.logger.exception("")
-            return False
-        # else
+        self._socket.sendto(b'RESET\n', (self._socket_ipaddr, self._socket_portnum))
+        # if no socket error assume the command was successful
         return True
 
 
