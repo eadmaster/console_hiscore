@@ -11,8 +11,6 @@ import time
 from io import BytesIO
 
 
-HISCORE_PATH_USE_SUBDIRS=False
-
 logging.getLogger().setLevel(logging.DEBUG)
 
 from retroarchpythonapi import RetroArchPythonApi
@@ -29,7 +27,7 @@ while True:
 HISCORE_PATH = retroarch.get_config_param('savefile_directory')  # store hiscores in savefile_directory by default
 #HISCORE_PATH = os.path.expanduser("~/.mame/hi")
 if("HISCORE_PATH" in os.environ):
-    HISCORE_PATH = os.environ['HISCORE_PATH']
+	HISCORE_PATH = os.environ['HISCORE_PATH']
 
 hiscore_inited_in_ram = False
 prev_content_name = None
@@ -77,10 +75,7 @@ while True:
 		
 		# try to read the .hi hiscore file
 		hiscore_file_data = None
-		if HISCORE_PATH_USE_SUBDIRS:
-			hiscore_file_path = HISCORE_PATH + "/" + system + "/" + curr_content_name + ".hi"
-		else:
-			hiscore_file_path = HISCORE_PATH + "/" + curr_content_name + ".hi"
+		hiscore_file_path = HISCORE_PATH + "/" + curr_content_name + ".hi"
 		
 		try:
 			hiscore_file = open(hiscore_file_path, 'rb')
@@ -136,8 +131,6 @@ while True:
 	#print(hiscore_file_bytesio.getvalue())
 	if curr_hiscore_ram_bytesio.getbuffer().nbytes > 0 and curr_hiscore_ram_bytesio.getvalue() != hiscore_file_bytesio.getvalue():
 		# (over-)write to the hiscore file
-		if HISCORE_PATH_USE_SUBDIRS and not os.path.exists(HISCORE_PATH + "/" + system):
-			os.mkdir(HISCORE_PATH + "/" + system)
 		if not os.path.isfile(HISCORE_PATH):
 			# show msg only at the 1st save
 			retroarch.show_msg("Hiscore file created")
