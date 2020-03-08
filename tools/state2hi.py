@@ -7,7 +7,7 @@ import sys
 import os
 import logging
 
-DEBUG=False
+DEBUG=True
 if DEBUG:
 	logging.getLogger().setLevel(logging.DEBUG)
 else:
@@ -55,11 +55,18 @@ def get_raw_memory_from_statedata(statedata):
 	# MEMO: feat. zlib compression
 
 	# FCEUmm  https://github.com/libretro/libretro-fceumm/blob/master/src/state.c
-	elif statedata.startswith(b'FCS\xFF'):
+	elif statedata.startswith(b'FCS'):
 		logging.warning("FCEU support is still WIP")
 		emulator = "fceu"
 		candidate_systems = [ "nes", "famicom", "fds", "nespal" ]
-		raw_memory = statedata[0x5D:]  # 2FIX: sometimes 0x56, 0x57
+		#raw_memory = statedata[0x5D:]  # 2FIX: sometimes 0x56, 0x57
+		raw_memory_start_offset = statedata.find(b"RAM")
+		if raw_memory_start_offset == -1:
+			logging.error("Invalid FCEU save state")
+			return None, None, None
+		# else
+		raw_memory_start_offset += 8
+		raw_memory = statedata[raw_memory_start_offset:]
 	# end of FCEU
 
 	# Gambatte  https://github.com/libretro/gambatte-libretro/blob/master/libgambatte/src/statesaver.cpp
@@ -181,8 +188,7 @@ def get_raw_memory_from_statedata(statedata):
 		
 	# TODO: more cores
 
-	if raw_memory == None:
-		logging.error("emulator not supported")
+	if emulator == None:
 		return None, None, None
 	else:
 		return raw_memory, candidate_systems, emulator
@@ -251,6 +257,10 @@ if __name__ == '__main__':
 
 	raw_memory, candidate_systems, EMU = get_raw_memory_from_statedata(statedata)
 
+	if not EMU:
+		logging.error("emulator not supported")
+		sys.exit(1)
+		
 	logging.info("detected system(s): " + str(candidate_systems))
 	logging.info("detected emulator: " + EMU)
 	logging.info("detected game: " + GAME_NAME)
