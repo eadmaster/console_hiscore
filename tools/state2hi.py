@@ -113,13 +113,20 @@ def get_raw_memory_from_statedata(statedata):
 	# end of Snes9x
 
 	# bsnes  https://github.com/byuu/bsnes/blob/master/bsnes/sfc/system/serialization.cpp
-	elif statedata.startswith(b'42\x53\x54\x31\x0F\x00\x00\x00\x70\x4C\x87\x10\x50\x65\x72\x66\x6F\x72\x6D\x61\x6E\x63\x65'):  # BST1....pL..Performance
+	#elif statedata.startswith(b'42\x53\x54\x31\x0F\x00\x00\x00\x70\x4C\x87\x10\x50\x65\x72\x66\x6F\x72\x6D\x61\x6E\x63\x65'):  # BST1....pL..Performance
 	#elif statedata[0x15:0x19] == b'BST1':  # old compressed saves?
-	#elif statedata.startswith(b'BST1'):
+	elif statedata.startswith(b'BST1'):
 		logging.warning("bsnes support is still WIP")
 		emulator = "bsnes"
 		candidate_systems = [ "snes", "snespal" ]
-		raw_memory = statedata[0x21C:]
+		if statedata[0xC:0x17] == b'Performance':
+			# old ver.
+			raw_memory = statedata[0x21C:]
+		elif statedata[0x8:0xA] == b'11':
+			# latest ver
+			raw_memory = statedata[0x284:]
+		# TODO: more versions
+		print(statedata[0x8:0xA])
 	# end of bsnes
 
 	# Genesis-Plus-GX  https://github.com/ekeeke/Genesis-Plus-GX/blob/master/core/state.c
@@ -188,7 +195,7 @@ def get_raw_memory_from_statedata(statedata):
 		
 	# TODO: more cores
 
-	if emulator == None:
+	if emulator == None or raw_memory == None:
 		return None, None, None
 	else:
 		return raw_memory, candidate_systems, emulator
