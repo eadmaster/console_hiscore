@@ -26,7 +26,7 @@ nes,smb:
 nes,Super Mario Bros. (World):
 nes,Super Mario Bros. (W) [!]:
 nes,crc32=d445f698:
-@:maincpu,program,7df,4,0,0,ff
+@:maincpu,program,7d7,6,0,0,ff
 
 
 gameboy,tetris:
