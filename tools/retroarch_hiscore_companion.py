@@ -11,6 +11,8 @@ import time
 from io import BytesIO
 
 
+HISCORE_PATH_USE_SUBDIRS=False
+
 logging.getLogger().setLevel(logging.DEBUG)
 
 from retroarchpythonapi import RetroArchPythonApi
@@ -65,16 +67,21 @@ while True:
 		# TODO: more systems  http://www.progettoemma.net/mess/sysset.php
 		
 		logging.debug("game was changed, looking hiscore data for " + curr_content_name + "...")
-		
+
 		from state2hi import get_hiscore_rows_from_game
 		# TODO: remove deps
 		hiscore_rows_to_process = get_hiscore_rows_from_game(candidate_systems, curr_content_name)
 		if len(hiscore_rows_to_process)==0:
 			logging.error("nothing found in hiscore.dat for current game")
 			continue
-		
+	
 		# try to read the .hi hiscore file
 		hiscore_file_data = None
+		#system = candidate_systems[0] # TODO: guess current system from ???
+		#if HISCORE_PATH_USE_SUBDIRS:
+		#	hiscore_file_path = HISCORE_PATH + "/" + system + "/" + curr_content_name + ".hi"
+		#else:
+		#	hiscore_file_path = HISCORE_PATH + "/" + curr_content_name + ".hi"
 		hiscore_file_path = HISCORE_PATH + "/" + curr_content_name + ".hi"
 		
 		try:
@@ -131,7 +138,9 @@ while True:
 	#print(hiscore_file_bytesio.getvalue())
 	if curr_hiscore_ram_bytesio.getbuffer().nbytes > 0 and curr_hiscore_ram_bytesio.getvalue() != hiscore_file_bytesio.getvalue():
 		# (over-)write to the hiscore file
-		if not os.path.isfile(HISCORE_PATH):
+		#if HISCORE_PATH_USE_SUBDIRS and not os.path.exists(HISCORE_PATH + "/" + system):
+		#	os.mkdir(HISCORE_PATH + "/" + system)
+		if not os.path.isfile(hiscore_file_path):
 			# show msg only at the 1st save
 			retroarch.show_msg("Hiscore file created")
 		hiscore_file = open(hiscore_file_path, 'wb') # write+binary mode
