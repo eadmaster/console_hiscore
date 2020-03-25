@@ -99,3 +99,12 @@ snes,crc32=5fb7a31d:
 ;megadrij,crc32=8d606480:
 @:maincpu,program,148be,e7,4d,00
 
+
+; ---- codes made by KorobonFan
+
+nes,buckyu:
+nes,Bucky O'Hare (U) [!]:
+nes,crc32=e19ee99c:
+@:maincpu,program,48,4,05,00
+;2FIX: gets overwritten before game is started, need to NOP that routine?
+
