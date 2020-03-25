@@ -74,6 +74,8 @@ while True:
 		if len(hiscore_rows_to_process)==0:
 			logging.error("nothing found in hiscore.dat for current game")
 			continue
+		else:
+			logging.debug("found hiscore patches")
 	
 		# try to read the .hi hiscore file
 		hiscore_file_data = None
