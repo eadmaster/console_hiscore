@@ -26,7 +26,7 @@ while True:
 # end while
 
 # path where .hi files will be loaded and saved
-HISCORE_PATH = retroarch.get_config_param('savefile_directory')  # store hiscores in savefile_directory by default
+HISCORE_PATH = str(retroarch.get_config_param('savefile_directory'), 'utf-8')  # store hiscores in savefile_directory by default
 #HISCORE_PATH = os.path.expanduser("~/.mame/hi")
 if("HISCORE_PATH" in os.environ):
 	HISCORE_PATH = os.environ['HISCORE_PATH']
