@@ -108,3 +108,15 @@ nes,crc32=e19ee99c:
 @:maincpu,program,48,4,05,00
 ;2FIX: gets overwritten before game is started, need to NOP that routine?
 
+;nes,crystalp:
+;nes,Conquest of the Crystal Palace (U):
+;nes,crc32=20a5219b:
+;@:maincpu,program,7ea,3,00,00
+;2FIX: untested
+
+nes,advisln2:
+nes,Hudson's Adventure Island II (U) [!]:
+nes,crc32=5d8f80c7:
+@:maincpu,program,3d8,5,00,00
+
+
