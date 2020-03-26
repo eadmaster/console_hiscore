@@ -41,11 +41,18 @@ hiscore_file_path = ""
 while True: 
 	# wait for some content to be loaded
 	while not (retroarch.is_alive() and retroarch.has_content()):
+		hiscore_inited_in_ram = False
+		prev_content_name = None
 		time.sleep(5)
+	# end while
 	
 	curr_content_name = str(retroarch.get_content_name(), 'utf-8')
 	if not curr_content_name:
+		hiscore_inited_in_ram = False
+		prev_content_name = None
+		time.sleep(5)
 		continue
+	# end if
 	
 	# detect game change
 	if curr_content_name != prev_content_name:
