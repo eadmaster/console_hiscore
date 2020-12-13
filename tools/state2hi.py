@@ -7,7 +7,7 @@ import sys
 import os
 import logging
 
-DEBUG=True
+DEBUG=os.getenv("STATE2HI_DEBUG")
 if DEBUG:
 	logging.getLogger().setLevel(logging.DEBUG)
 else:
@@ -49,6 +49,16 @@ def get_raw_memory_from_statedata(statedata):
 		candidate_systems = [ "nes", "famicom", "fds", "nespal" ]
 		raw_memory = statedata[0x38:]  # skip 56 bytes header
 	# end of Nestopia
+
+	# Nestopia zipped saves
+	if statedata[0:5] == b'#RZIP':
+		emulator = "nestopia"
+		candidate_systems = [ "nes", "famicom", "fds", "nespal" ]
+		savegamedata_compressed = statedata[0x18:]  # skip 18 bytes header
+		import zlib
+		raw_memory = zlib.decompress(savegamedata_compressed)
+		raw_memory = raw_memory[0x38:]  # skip 56 bytes header
+	# end of Nestopia zipped saves
 
 	# FCEUx  https://github.com/TASVideos/fceux/blob/master/src/state.cpp
 	#elif statedata.startswith(b'FCSX'):
@@ -129,6 +139,10 @@ def get_raw_memory_from_statedata(statedata):
 		print(statedata[0x8:0xA])
 	# end of bsnes
 
+	# TODO: Genecyst, Gens, Kega https://segaretro.org/Genesis_Savestate_Viewer
+	# TODO: MEKA
+	# TODO: Nesticle
+	
 	# Genesis-Plus-GX  https://github.com/ekeeke/Genesis-Plus-GX/blob/master/core/state.c
 	elif statedata.startswith(b'GENPLUS-GX'):
 		logging.warning("GENPLUS-GX support is still WIP")
@@ -273,7 +287,8 @@ if __name__ == '__main__':
 	logging.info("detected game: " + GAME_NAME)
 
 	if DEBUG:
-		OUTFILE_PATH=GAME_NAME + ".raw"
+		#OUTFILE_PATH=GAME_NAME + ".raw"
+		OUTFILE_PATH=sys.argv[1] + ".raw"
 		outfile = open(OUTFILE_PATH, "wb")
 		outfile.write(raw_memory)
 	
