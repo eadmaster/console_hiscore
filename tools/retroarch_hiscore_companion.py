@@ -122,6 +122,9 @@ while True:
 		#logging.debug(len(response_bytes))
 		#logging.debug(int(response_bytes[0], base=16))
 		#logging.debug(start_byte)
+		if response_bytes == [b'-1']:
+			logging.error("invalid address found in hiscore datfile (skipped): " + str(hex(address)))
+			break
 
 		# 1st loop: check start_byte and end_byte, if the match the code and an hiscore file was read, init the memory
 		if hiscore_file_bytesio.getbuffer().nbytes > 0 and hiscore_inited_in_ram == False and response_bytes and int(response_bytes[0], base=16) == start_byte and int(response_bytes[-1], base=16) == end_byte:
@@ -160,6 +163,7 @@ while True:
 		#NO? retroarch.show_msg("Hiscore saved")  # too many alerts?
 	else:
 		logging.debug("hiscore data unchanged in memory, nothing to save")
+	# end if
 	
 	# sleep to avoid sending too many read/write commands
 	time.sleep(5)

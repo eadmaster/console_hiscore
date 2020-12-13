@@ -42,6 +42,13 @@ def get_raw_memory_from_statedata(statedata):
 		statedata = statefile.read()
 	# end if
 
+	# Retroarch RZIP savestates
+	if statedata[0:5] == b'#RZIP':
+		savegamedata_compressed = statedata[0x18:]  # skip 18 bytes header
+		import zlib
+		statedata = zlib.decompress(savegamedata_compressed)
+	# end if
+	
 	# Nestopia
 	# MEMO: savestates are swappable between retroarch and vanilla Nestopia (just rename *.state -> *.nst)
 	if statedata[0:3] == b'NST':
@@ -49,16 +56,6 @@ def get_raw_memory_from_statedata(statedata):
 		candidate_systems = [ "nes", "famicom", "fds", "nespal" ]
 		raw_memory = statedata[0x38:]  # skip 56 bytes header
 	# end of Nestopia
-
-	# Nestopia zipped saves
-	if statedata[0:5] == b'#RZIP':
-		emulator = "nestopia"
-		candidate_systems = [ "nes", "famicom", "fds", "nespal" ]
-		savegamedata_compressed = statedata[0x18:]  # skip 18 bytes header
-		import zlib
-		raw_memory = zlib.decompress(savegamedata_compressed)
-		raw_memory = raw_memory[0x38:]  # skip 56 bytes header
-	# end of Nestopia zipped saves
 
 	# FCEUx  https://github.com/TASVideos/fceux/blob/master/src/state.cpp
 	#elif statedata.startswith(b'FCSX'):

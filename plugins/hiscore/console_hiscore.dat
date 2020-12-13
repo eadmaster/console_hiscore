@@ -34,7 +34,7 @@ genesis,tf3:
 genesis,Thunder Force III (Japan, USA):
 genesis,Thunder Force III (JU) [!]:
 genesis,crc32=1b3f399a:
-@:maincpu,program,fff2ac,4,00,90
+@:maincpu,program,f2ac,4,00,90
 
 
 ; ---- codes made by eadmaster
@@ -95,25 +95,35 @@ snes,crc32=5fb7a31d:
 ;megadriv,tf4:
 ;megadriv,Thunder Force IV (Europe):
 ;megadrij,tf4j:
-;megadrij,Thunder Force IV (J) [!]:
 ;megadrij,crc32=8d606480:
-@:maincpu,program,148be,e7,4d,00
+;@:maincpu,program,148be,e7,4d,00
+;megadrij,Thunder Force IV (J) [!]:
+;@:maincpu,program,f000,50,53,00
 
 nes,advisln2:
 nes,Hudson's Adventure Island II (U) [!]:
 nes,crc32=5d8f80c7:
 @:maincpu,program,3d8,5,00,00
 
+nes,Burai Fighter (U) [!]:
+@:maincpu,program,7c4,8,00,00
 
-; ---- codes made by KorobonFan
+nes,Daiku no Gen San (J):
+@:maincpu,program,125,5,00,00
+
+
+; ---- codes made by KorobonFan  
+;  https://www.reddit.com/r/emulation/comments/fo4o3g/looking_for_rom_hackers_for_console_hiscores/#fle63un
 
 ;nes,buckyu:
+;nes,Bucky O'Hare (USA):
 ;nes,Bucky O'Hare (U) [!]:
 ;nes,crc32=e19ee99c:
 ;@:maincpu,program,48,4,05,00
-;2FIX: gets overwritten before game is started, need to NOP that routine?
+;2FIX: gets overwritten after a new game is started, need to NOP that routine?
 
 nes,crystalp:
+nes,Conquest of the Crystal Palace (USA):
 nes,Conquest of the Crystal Palace (U):
 nes,crc32=20a5219b:
 nes,Matendouji (J) [T+Eng_Stardust Crusaders]:
