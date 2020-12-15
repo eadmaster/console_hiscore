@@ -169,6 +169,9 @@ while True:
 				for i in range(0, len(buf_swapped)-1, 2):
 					buf += bytes([ buf_swapped[i+1] ])
 					buf += bytes([ buf_swapped[i] ])
+				#if ( len(buf) % 2 ):
+				#	logging.warning("odd sizes prolly wont work well with this core due to swapping")
+				#	buf += bytes( b'00' )  # try to fix
 			# end if
 
 			if retroarch.write_core_ram(address, buf) == True:

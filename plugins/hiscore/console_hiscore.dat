@@ -47,8 +47,10 @@ nes,gunnac:
 nes,gunnacj:
 nes,Gun Nac (USA):
 nes,Gun Nac (Japan):
+nes,Gun Nac (J):
 nes,Gun-Nac (J) [T+Eng]:
 nes,crc32=d9084936:
+nes,crc32=04008279:
 @:maincpu,program,e7,6,0,0,ff
 ; TODO: add options
 
@@ -111,10 +113,6 @@ nes,Super Contra (J):
 nes,crc32=9bb6059e:
 @:maincpu,program,7e0,4,00,00
 
-genesis,Trouble Shooter (U) [!]:
-genesis,crc32=becfc39b:
-@:maincpu,program,fe24,2,00,00
-
 megadrij,Battle Mania 2 - TS Vintage (J) [c][!]:
 megadrij,Battle Mania - Dai Gin Jou (JK) [c][!]:
 megadrij,Battle Mania Daiginjou (Japan, Korea):
@@ -123,13 +121,18 @@ megadrij,Battle Mania - Dai Gin Jou (JK) [T+Eng(TShooter)20061029-TSV_MIJET]:
 megadrij,crc32=07BA38F6:
 @:maincpu,program,fe22,2,01,F4
 
-;WIP:
+genesis,Air Buster (U) [c][!]:
+genesis,crc32=f3d65baa:
+@:maincpu,program,ff16,4,00,00
+
+;2FIX, shifted?:
 ;pce,Bouken Danshaku Don - The Lost Sunheart (J):
 ;@:maincpu,program,200,a1,00,20
 
-;WIP:
-;pce,Gunhed (J):
-;@:maincpu,program,36a,6,00,00
+pce,Gunhed (J):
+; Blazing Lazers
+pce,crc32=59cdc8d0:
+@:maincpu,program,36e,4,00,00
 
 
 ; ---- codes made by KorobonFan  

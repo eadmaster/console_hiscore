@@ -143,19 +143,21 @@ def get_raw_memory_from_statedata(statedata):
 	elif statedata.startswith(b'GENPLUS-GX'):
 		logging.warning("GENPLUS-GX support is still WIP")
 		emulator = "genplus"
-		candidate_systems = [ "genesis", "megadrij", "megadriv", "sms", "smsj", "smspal", "gamegear", "gamegeaj", "segacd" ]
+		candidate_systems = [ "genesis", "megadrij", "megadriv", "segacd" ]
 		raw_memory = statedata[16:]  # TODO: cut end ram?
 		
 		# TODO: detect sms+gamegear
-		#if SYSTEM in ["sms", "gamegear"]:
+		#if ...
 		#	raw_memory = statedata[16:0x200F]
+		#	candidate_systems = [ "sms", "smsj", "smspal", "gamegear", "gamegeaj" ]
 		
-		# 16-bit swapping  https://stackoverflow.com/questions/36096292/efficient-way-to-swap-bytes-in-python
-		raw_memoryswapped = raw_memory
-		raw_memory = bytearray()
-		for i in range(0, len(raw_memoryswapped), 2):
-			raw_memory.append(raw_memoryswapped[i+1])
-			raw_memory.append(raw_memoryswapped[i])
+		if "genesis" in candidate_systems:
+			# 16-bit swapping  https://stackoverflow.com/questions/36096292/efficient-way-to-swap-bytes-in-python
+			raw_memoryswapped = raw_memory
+			raw_memory = bytearray()
+			for i in range(0, len(raw_memoryswapped), 2):
+				raw_memory.append(raw_memoryswapped[i+1])
+				raw_memory.append(raw_memoryswapped[i])
 	# end of Genesis-Plus-GX
 	
 	# Mednafen PC Engine
