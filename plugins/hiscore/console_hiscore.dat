@@ -1,3 +1,9 @@
+;           ####    ####   #    #   ####    ####   #       ######
+;          #    #  #    #  ##   #  #       #    #  #       #
+;          #       #    #  # #  #   ####   #    #  #       #####
+;          #       #    #  #  # #       #  #    #  #       #
+;          #    #  #    #  #   ##  #    #  #    #  #       #
+;           ####    ####   #    #   ####    ####   ######  ######
 ;     ___   ___ ___ ________ ______  ________ _____     _______    ______   _______ __________
 ;    /  /  /  //  //       //  ___/ / ____  // _   \   /      /   / __   \ / __   //___   ___/
 ;   /  /__/  //  //  _____//  /    / /   / // /_/  /  /  ____/   / /  \  // /_/  /    /  /
@@ -18,7 +24,6 @@
 ; Based on the Unofficial hiscore.dat file from http://highscore.mameworld.info/
 
 
-
 ; ---- codes made by Leezer
 ; ---- exported with grep '^[^@;].*,.*$' hiscore.dat
 
@@ -33,6 +38,24 @@ genesis,Thunder Force III (Japan, USA):
 genesis,Thunder Force III (JU) [!]:
 genesis,crc32=1b3f399a:
 @:maincpu,program,f2ac,4,00,90
+
+
+; ---- codes made by KorobonFan
+
+;nes,buckyu:
+;nes,Bucky O'Hare (USA):
+;nes,Bucky O'Hare (U) [!]:
+;nes,crc32=e19ee99c:
+;@:maincpu,program,48,4,05,00
+;2FIX: gets overwritten after a new game is started, need to NOP that routine?
+
+nes,crystalp:
+nes,Conquest of the Crystal Palace (USA):
+nes,Conquest of the Crystal Palace (U):
+nes,crc32=20a5219b:
+nes,Matendouji (J) [T+Eng_Stardust Crusaders]:
+nes,crc32=21e836f7:
+@:maincpu,program,7ea,3,00,00
 
 
 ; ---- codes made by eadmaster
@@ -113,6 +136,10 @@ nes,Super Contra (J):
 nes,crc32=9bb6059e:
 @:maincpu,program,7e0,4,00,00
 
+genesis,Trouble Shooter (U) [!]:
+genesis,crc32=becfc39b:
+@:maincpu,program,fe24,2,00,00
+
 megadrij,Battle Mania 2 - TS Vintage (J) [c][!]:
 megadrij,Battle Mania - Dai Gin Jou (JK) [c][!]:
 megadrij,Battle Mania Daiginjou (Japan, Korea):
@@ -125,7 +152,7 @@ genesis,Air Buster (U) [c][!]:
 genesis,crc32=f3d65baa:
 @:maincpu,program,ff16,4,00,00
 
-;2FIX, shifted?:
+;2FIX: shifted?
 ;pce,Bouken Danshaku Don - The Lost Sunheart (J):
 ;@:maincpu,program,200,a1,00,20
 
@@ -133,22 +160,3 @@ pce,Gunhed (J):
 ; Blazing Lazers
 pce,crc32=59cdc8d0:
 @:maincpu,program,36e,4,00,00
-
-
-; ---- codes made by KorobonFan  
-;  https://www.reddit.com/r/emulation/comments/fo4o3g/looking_for_rom_hackers_for_console_hiscores/#fle63un
-
-;nes,buckyu:
-;nes,Bucky O'Hare (USA):
-;nes,Bucky O'Hare (U) [!]:
-;nes,crc32=e19ee99c:
-;@:maincpu,program,48,4,05,00
-;2FIX: gets overwritten after a new game is started, need to NOP that routine?
-
-nes,crystalp:
-nes,Conquest of the Crystal Palace (USA):
-nes,Conquest of the Crystal Palace (U):
-nes,crc32=20a5219b:
-nes,Matendouji (J) [T+Eng_Stardust Crusaders]:
-nes,crc32=21e836f7:
-@:maincpu,program,7ea,3,00,00

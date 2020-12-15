@@ -121,7 +121,7 @@ while True:
 		#end if reported_system_id == "mega_drive"
 	# end if game was changed
 	
-	curr_hiscore_ram_bytesio = BytesIO()  # read from live memory to here
+	curr_hiscore_in_ram_bytesio = BytesIO()  # read from live memory to here
 	for row in hiscore_rows_to_process:
 		logging.debug("processing: " + row)
 		splitted_row = row.split(",")
@@ -177,8 +177,8 @@ while True:
 			if retroarch.write_core_ram(address, buf) == True:
 				# successfull memory write
 				buf = hiscore_file_bytesio.read(length)  # reload
-				curr_hiscore_ram_bytesio.seek(0)  # rewind
-				curr_hiscore_ram_bytesio.write(buf)
+				curr_hiscore_in_ram_bytesio.seek(0)  # rewind
+				curr_hiscore_in_ram_bytesio.write(buf)
 				if row == hiscore_rows_to_process[-1]:
 					# TODO: check if all the rows were written
 					hiscore_inited_in_ram = True
@@ -186,18 +186,18 @@ while True:
 		
 		elif response_bytes:
 			# not the first loop
-			# append read bytes to curr_hiscore_ram_bytesio
+			# append read bytes to curr_hiscore_in_ram_bytesio
 			for b in response_bytes:
-				curr_hiscore_ram_bytesio.write(bytes([ int(b, base=16) ] ))
+				curr_hiscore_in_ram_bytesio.write(bytes([ int(b, base=16) ] ))
 	# end for rows
 	
 	# check if hiscore data is changed
-	curr_hiscore_ram_bytesio.flush()
-	curr_hiscore_ram_bytesio.seek(0)  # rewind
-	#print(curr_hiscore_ram_bytesio.getvalue())
+	curr_hiscore_in_ram_bytesio.flush()
+	curr_hiscore_in_ram_bytesio.seek(0)  # rewind
+	#print(curr_hiscore_in_ram_bytesio.getvalue())
 	#print(hiscore_file_bytesio.getvalue())
-	curr_hiscore_ram_bytesio_value = curr_hiscore_ram_bytesio.getvalue()
-	if len(curr_hiscore_ram_bytesio_value) > 0 and bool(any(c != 0 for c in curr_hiscore_ram_bytesio_value)) and curr_hiscore_ram_bytesio_value != hiscore_file_bytesio.getvalue():
+	curr_hiscore_in_ram_bytesio_value = curr_hiscore_in_ram_bytesio.getvalue()
+	if len(curr_hiscore_in_ram_bytesio_value) > 0 and bool(any(c != 0 for c in curr_hiscore_in_ram_bytesio_value)) and curr_hiscore_in_ram_bytesio_value != hiscore_file_bytesio.getvalue():
 		# (over-)write to the hiscore file
 		#if HISCORE_PATH_USE_SUBDIRS and not os.path.exists(HISCORE_PATH + "/" + system):
 		#	os.mkdir(HISCORE_PATH + "/" + system)
@@ -205,9 +205,9 @@ while True:
 			# show msg only at the 1st save
 			retroarch.show_msg("Hiscore file created")
 		hiscore_file = open(hiscore_file_path, 'wb') # write+binary mode
-		hiscore_file.write(curr_hiscore_ram_bytesio_value)
+		hiscore_file.write(curr_hiscore_in_ram_bytesio_value)
 		hiscore_file.close()
-		hiscore_file_bytesio = curr_hiscore_ram_bytesio  # keep the reference in memory
+		hiscore_file_bytesio = curr_hiscore_in_ram_bytesio  # keep the reference in memory
 		logging.info("written hiscore file " + hiscore_file_path)
 		#NO? retroarch.show_msg("Hiscore saved")  # too many alerts?
 	else:
