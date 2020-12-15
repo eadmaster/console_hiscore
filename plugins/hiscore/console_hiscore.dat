@@ -115,11 +115,13 @@ genesis,Trouble Shooter (U) [!]:
 genesis,crc32=becfc39b:
 @:maincpu,program,fe24,2,00,00
 
-;WIP:
-;megadrij,Battle Mania Daiginjou (Japan, Korea):
-;megadrij,Battle Mania 2 - TS Vintage (J) [c][!]:
-;megadrij,crc32=312FA0F2:
-;@:maincpu,program,??,2,00,00
+megadrij,Battle Mania 2 - TS Vintage (J) [c][!]:
+megadrij,Battle Mania - Dai Gin Jou (JK) [c][!]:
+megadrij,Battle Mania Daiginjou (Japan, Korea):
+megadrij,crc32=312FA0F2:
+megadrij,Battle Mania - Dai Gin Jou (JK) [T+Eng(TShooter)20061029-TSV_MIJET]:
+megadrij,crc32=07BA38F6:
+@:maincpu,program,fe22,2,01,F4
 
 ;WIP:
 ;pce,Bouken Danshaku Don - The Lost Sunheart (J):

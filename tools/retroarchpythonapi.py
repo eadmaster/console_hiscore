@@ -182,24 +182,31 @@ class RetroArchPythonApi(object):
     def get_system_id(self):
         """ returns current system_id (e.g. 'nes') or the core name (e.g. 'Nestopia') """
         status_str = self.get_status()
-        splitted_status_str = status_str.split(b",")
-        return splitted_status_str[0].split(b" ")[-1]
+        if status_str:
+            splitted_status_str = status_str.split(b",")
+            return splitted_status_str[0].split(b" ")[-1]
+        else:
+            return b""
         
-        
-    def get_content_name(self):
-        """ returns current content name, from the ROM filename (e.g. 'Super Mario Bros. (W) [!]') """
-        status_str = self.get_status()
-        splitted_status_str = status_str.split(b",")
-        return splitted_status_str[1]
-            
 
     def get_content_crc32_hash(self):
         """ returns current content CRC32 hash as a string """
         status_str = self.get_status()
-        splitted_status_str = status_str.split(b",")
-        return splitted_status_str[2].split(b"=")[1]
-    
-    
+        if status_str and b"crc32=" in status_str:
+            return status_str.split(b"crc32=")[1]
+        else:
+            return b""
+
+
+    def get_content_name(self):
+        """ returns current content name, from the ROM filename (e.g. 'Super Mario Bros. (W) [!]') """
+        status_str = self.get_status()
+        if status_str and b"crc32=" in status_str:
+            return status_str.split(b",crc32=")[0].split(b",", maxsplit=1)[-1]
+        else:
+            return b""
+        
+        
     def get_version(self):
         """ returns current Retroarch version (as a string) """
         self._socket.sendto(b'VERSION\n', (self._socket_ipaddr, self._socket_portnum))
