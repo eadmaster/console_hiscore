@@ -57,16 +57,11 @@ def get_raw_memory_from_statedata(statedata):
 		raw_memory = statedata[0x38:]  # skip 56 bytes header
 	# end of Nestopia
 
-	# FCEUx  https://github.com/TASVideos/fceux/blob/master/src/state.cpp
-	#elif statedata.startswith(b'FCSX'):
-	# MEMO: feat. zlib compression
-
 	# FCEUmm  https://github.com/libretro/libretro-fceumm/blob/master/src/state.c
 	elif statedata.startswith(b'FCS'):
 		logging.warning("FCEU support is still WIP")
 		emulator = "fceu"
 		candidate_systems = [ "nes", "famicom", "fds", "nespal" ]
-		#raw_memory = statedata[0x5D:]  # 2FIX: sometimes 0x56, 0x57
 		raw_memory_start_offset = statedata.find(b"RAM")
 		if raw_memory_start_offset == -1:
 			logging.error("Invalid FCEU save state")
@@ -75,6 +70,10 @@ def get_raw_memory_from_statedata(statedata):
 		raw_memory_start_offset += 8
 		raw_memory = statedata[raw_memory_start_offset:]
 	# end of FCEU
+
+	# TODO: FCEUx  https://github.com/TASVideos/fceux/blob/master/src/state.cpp
+	#elif statedata.startswith(b'FCSX'):
+	# MEMO: feat. zlib compression
 
 	# Gambatte  https://github.com/libretro/gambatte-libretro/blob/master/libgambatte/src/statesaver.cpp
 	#print(statedata[0:16])
@@ -133,7 +132,7 @@ def get_raw_memory_from_statedata(statedata):
 			# latest ver
 			raw_memory = statedata[0x284:]
 		# TODO: more versions
-		print(statedata[0x8:0xA])
+		#print(statedata[0x8:0xA])
 	# end of bsnes
 
 	# TODO: Genecyst, Gens, Kega https://segaretro.org/Genesis_Savestate_Viewer
@@ -145,17 +144,34 @@ def get_raw_memory_from_statedata(statedata):
 		logging.warning("GENPLUS-GX support is still WIP")
 		emulator = "genplus"
 		candidate_systems = [ "genesis", "megadrij", "megadriv", "sms", "smsj", "smspal", "gamegear", "gamegeaj", "segacd" ]
-		raw_memoryswapped = statedata[16:]  # TODO: cut end ram
+		raw_memory = statedata[16:]  # TODO: cut end ram?
+		
 		# TODO: detect sms+gamegear
 		#if SYSTEM in ["sms", "gamegear"]:
 		#	raw_memory = statedata[16:0x200F]
 		
 		# 16-bit swapping  https://stackoverflow.com/questions/36096292/efficient-way-to-swap-bytes-in-python
+		raw_memoryswapped = raw_memory
 		raw_memory = bytearray()
 		for i in range(0, len(raw_memoryswapped), 2):
 			raw_memory.append(raw_memoryswapped[i+1])
 			raw_memory.append(raw_memoryswapped[i])
-	# end of Genesis-Plus-GX 
+	# end of Genesis-Plus-GX
+	
+	# Mednafen PC Engine
+	elif statedata.startswith(b'MDFNSVST'):
+		emulator = "mednafen"
+		# assume pc_engine, TODO: detect the actual system properly
+		candidate_systems = [ "pce", "tg16", "sgx" ]
+		# ...
+		raw_memory_start_offset = statedata.find(b"BaseRAM")
+		if raw_memory_start_offset == -1:
+			logging.error("Invalid mednafen pc engine save state")
+			return None, None, None
+		# else
+		raw_memory_start_offset += 0xE
+		raw_memory = statedata[raw_memory_start_offset:]
+	# end of Mednafen PC Engine
 
 	# TODO: MAME https://github.com/mamedev/mame/blob/master/src/emu/save.cpp
 	elif statedata.startswith(b'MAMESAVE'):

@@ -63,6 +63,7 @@ while True:
 		# detect the system from the core name
 		reported_system_id = str(retroarch.get_system_id(), 'utf-8')
 		candidate_systems = []
+		logging.debug("reported_system_id: " + reported_system_id)
 		if reported_system_id in [ "Nestopia", "nes" ]:
 			candidate_systems = [ "nes", "famicom", "fds", "nespal" ]
 		elif reported_system_id == "super_nes":
@@ -71,6 +72,8 @@ while True:
 			candidate_systems = [ "gameboy", "gbcolor", "supergb" ]
 		elif reported_system_id == "mega_drive":
 			candidate_systems = [ "genesis", "megadrij", "megadriv", "sms", "smsj", "smspal", "gamegear", "gamegeaj", "segacd" ]
+		elif reported_system_id == "pc_engine":
+			candidate_systems = [ "pce", "tg16", "sgx" ]
 		# TODO: more systems  http://www.progettoemma.net/mess/sysset.php
 		
 		logging.debug("game was changed, looking hiscore data for " + curr_content_name + "...")
@@ -102,6 +105,20 @@ while True:
 		except:
 			logging.info("hiscore file not found, will be created...")
 			#logging.exception("")
+		
+		# DELETE
+		# if reported_system_id == "mega_drive":  # TODO: test core==genplusgx
+			# # need to byteswap hiscore_file_bytesio
+			# hiscore_file_bytesio_swapped_buf = hiscore_file_bytesio.getbuffer()
+			# hiscore_file_bytesio_len = hiscore_file_bytesio_swapped_buf.nbytes
+			# hiscore_file_bytesio = BytesIO(b"\x00" * hiscore_file_bytesio_len)  # zero fill init
+			# hiscore_file_bytesio_buf = hiscore_file_bytesio.getbuffer()
+			# for i in range(0, hiscore_file_bytesio_len-1, 2):
+				# hiscore_file_bytesio_buf[i] = hiscore_file_bytesio_swapped_buf[i+1]
+				# hiscore_file_bytesio_buf[i+1] = hiscore_file_bytesio_swapped_buf[i]
+			# #hiscore_file_bytesio.flush()
+			# hiscore_file_bytesio.seek(0)  # rewind
+		#end if reported_system_id == "mega_drive"
 	# end if game was changed
 	
 	curr_hiscore_ram_bytesio = BytesIO()  # read from live memory to here
@@ -125,20 +142,47 @@ while True:
 		if response_bytes == [b'-1']:
 			logging.error("invalid address found in hiscore datfile (skipped): " + str(hex(address)))
 			break
-
+		
+		if response_bytes and reported_system_id == "mega_drive":  # TODO: test core==genplusgx
+			# need to byteswap response_bytes
+			response_bytes_swapped = list()
+			for i in range(0, len(response_bytes)-1, 2):
+				response_bytes_swapped.append(response_bytes[i+1])
+				response_bytes_swapped.append(response_bytes[i])
+			response_bytes = response_bytes_swapped
+			if ( len(response_bytes) % 2 ):
+				logging.warning("odd sizes prolly wont work well with this core due to swapping")
+				response_bytes.append(b'00')  # try to fix
+		#end if
+			
 		# 1st loop: check start_byte and end_byte, if the match the code and an hiscore file was read, init the memory
 		if hiscore_file_bytesio.getbuffer().nbytes > 0 and hiscore_inited_in_ram == False and response_bytes and int(response_bytes[0], base=16) == start_byte and int(response_bytes[-1], base=16) == end_byte:
 			logging.info("start_byte and end_byte matches, writing into core memory...")
 			# write data from hiscore_file_bytesio buffer
 			buf = hiscore_file_bytesio.read(length)
+			hiscore_file_bytesio.seek(0)  # rewind
+			
+			if reported_system_id == "mega_drive":  # TODO: test core==genplusgx
+				# need to byteswap buf before writing into memory
+				buf_swapped = buf   # TODO: faster method using bytearray() + append
+				buf = bytes()
+				for i in range(0, len(buf_swapped)-1, 2):
+					buf += bytes([ buf_swapped[i+1] ])
+					buf += bytes([ buf_swapped[i] ])
+			# end if
+
 			if retroarch.write_core_ram(address, buf) == True:
 				# successfull memory write
+				buf = hiscore_file_bytesio.read(length)  # reload
+				curr_hiscore_ram_bytesio.seek(0)  # rewind
 				curr_hiscore_ram_bytesio.write(buf)
 				if row == hiscore_rows_to_process[-1]:
 					# TODO: check if all the rows were written
 					hiscore_inited_in_ram = True
 					retroarch.show_msg("Hiscore loaded")
+		
 		elif response_bytes:
+			# not the first loop
 			# append read bytes to curr_hiscore_ram_bytesio
 			for b in response_bytes:
 				curr_hiscore_ram_bytesio.write(bytes([ int(b, base=16) ] ))
@@ -146,9 +190,11 @@ while True:
 	
 	# check if hiscore data is changed
 	curr_hiscore_ram_bytesio.flush()
+	curr_hiscore_ram_bytesio.seek(0)  # rewind
 	#print(curr_hiscore_ram_bytesio.getvalue())
 	#print(hiscore_file_bytesio.getvalue())
-	if curr_hiscore_ram_bytesio.getbuffer().nbytes > 0 and curr_hiscore_ram_bytesio.getvalue() != hiscore_file_bytesio.getvalue():
+	curr_hiscore_ram_bytesio_value = curr_hiscore_ram_bytesio.getvalue()
+	if len(curr_hiscore_ram_bytesio_value) > 0 and bool(any(c != 0 for c in curr_hiscore_ram_bytesio_value)) and curr_hiscore_ram_bytesio_value != hiscore_file_bytesio.getvalue():
 		# (over-)write to the hiscore file
 		#if HISCORE_PATH_USE_SUBDIRS and not os.path.exists(HISCORE_PATH + "/" + system):
 		#	os.mkdir(HISCORE_PATH + "/" + system)
@@ -156,7 +202,7 @@ while True:
 			# show msg only at the 1st save
 			retroarch.show_msg("Hiscore file created")
 		hiscore_file = open(hiscore_file_path, 'wb') # write+binary mode
-		hiscore_file.write(curr_hiscore_ram_bytesio.getvalue())
+		hiscore_file.write(curr_hiscore_ram_bytesio_value)
 		hiscore_file.close()
 		hiscore_file_bytesio = curr_hiscore_ram_bytesio  # keep the reference in memory
 		logging.info("written hiscore file " + hiscore_file_path)

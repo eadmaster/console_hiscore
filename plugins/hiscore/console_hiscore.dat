@@ -82,16 +82,17 @@ snes,crc32=5fb7a31d:
 @:maincpu,program,10D,5,00,00
 ; TODO: add options
 
-; WIP:
-;genesis,lightfor:
-;genesis,Lightening Force (USA):
-;megadriv,tf4:
-;megadriv,Thunder Force IV (Europe):
-;megadrij,tf4j:
-;megadrij,crc32=8d606480:
-;@:maincpu,program,148be,e7,4d,00
+megadrij,tf4j:
 megadrij,Thunder Force IV (J) [!]:
-@:maincpu,program,f000,e7,4d,00
+megadrij,crc32=8d606480:
+genesis,lightfor:
+genesis,Lightening Force - Quest for the Darkstar (USA):
+genesis,Lightening Force (U) [c][!]:
+megadrij,crc32=c8f8c0e0:
+megadriv,tf4:
+megadriv,Thunder Force IV (Europe):
+@:maincpu,program,f000,50,4d,50
+@:maincpu,program,f08a,4,00,90
 
 nes,advisln2:
 nes,Hudson's Adventure Island II (U) [!]:
@@ -113,6 +114,12 @@ nes,crc32=9bb6059e:
 genesis,Trouble Shooter (U) [!]:
 genesis,crc32=becfc39b:
 @:maincpu,program,fe24,2,00,00
+
+;WIP:
+;megadrij,Battle Mania Daiginjou (Japan, Korea):
+;megadrij,Battle Mania 2 - TS Vintage (J) [c][!]:
+;megadrij,crc32=312FA0F2:
+;@:maincpu,program,??,2,00,00
 
 ;WIP:
 ;pce,Bouken Danshaku Don - The Lost Sunheart (J):
