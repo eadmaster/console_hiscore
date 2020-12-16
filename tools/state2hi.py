@@ -146,20 +146,18 @@ def get_raw_memory_from_statedata(statedata):
 		candidate_systems = [ "genesis", "megadrij", "megadriv", "segacd" ]
 		raw_memory = statedata[16:]  # TODO: cut end ram?
 		
-		# TODO: detect sms+gamegear
+		#TODO: detect sms+gamegear: check the address space?  https://www.smspower.org/Development/MemoryMap
 		#if ...
 		#	raw_memory = statedata[16:0x200F]
 		#	candidate_systems = [ "sms", "smsj", "smspal", "gamegear", "gamegeaj" ]
-		
-		if "genesis" in candidate_systems:
-			# 16-bit swapping  https://stackoverflow.com/questions/36096292/efficient-way-to-swap-bytes-in-python
-			raw_memoryswapped = raw_memory
-			raw_memory = bytearray()
-			for i in range(0, len(raw_memoryswapped), 2):
-				raw_memory.append(raw_memoryswapped[i+1])
-				raw_memory.append(raw_memoryswapped[i])
+
 	# end of Genesis-Plus-GX
-	
+	elif statedata.startswith(b'Pico'):
+		emulator = "picodrive"
+		candidate_systems = [ "genesis", "megadrij", "megadriv", "segacd" ]
+		raw_memory = statedata[0x76:]
+		#TODO: detect sms+gamegear: check the address space?  https://www.smspower.org/Development/MemoryMap
+		
 	# Mednafen PC Engine
 	elif statedata.startswith(b'MDFNSVST'):
 		emulator = "mednafen"
@@ -223,6 +221,14 @@ def get_raw_memory_from_statedata(statedata):
 		return None, None, None
 		
 	# TODO: more cores
+	
+	if "genesis" in candidate_systems:
+		# 16-bit swapping  https://stackoverflow.com/questions/36096292/efficient-way-to-swap-bytes-in-python
+		raw_memoryswapped = raw_memory
+		raw_memory = bytearray()
+		for i in range(0, len(raw_memoryswapped), 2):
+			raw_memory.append(raw_memoryswapped[i+1])
+			raw_memory.append(raw_memoryswapped[i])
 
 	if emulator == None or raw_memory == None:
 		return None, None, None
@@ -302,8 +308,8 @@ if __name__ == '__main__':
 	logging.info("detected game: " + GAME_NAME)
 
 	if DEBUG:
-		#OUTFILE_PATH=GAME_NAME + ".raw"
-		OUTFILE_PATH=sys.argv[1] + ".raw"
+		#OUTFILE_PATH=GAME_NAME + ".mem"
+		OUTFILE_PATH=sys.argv[1] + ".mem"
 		outfile = open(OUTFILE_PATH, "wb")
 		outfile.write(raw_memory)
 	
