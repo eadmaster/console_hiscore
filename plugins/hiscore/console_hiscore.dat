@@ -42,12 +42,12 @@ genesis,crc32=1b3f399a:
 
 ; ---- codes made by KorobonFan
 
+;2FIX: gets overwritten when a new game is started
 ;nes,buckyu:
 ;nes,Bucky O'Hare (USA):
 ;nes,Bucky O'Hare (U) [!]:
-;nes,crc32=e19ee99c:
+;nes,crc32=3c9622d3:
 ;@:maincpu,program,48,4,05,00
-;2FIX: gets overwritten after a new game is started, need to NOP that routine?
 
 nes,crystalp:
 nes,Conquest of the Crystal Palace (USA):
@@ -81,6 +81,23 @@ nes,nghostb2j:
 nes,New Ghostbusters II (J):
 nes,crc32=5931be01:
 @:maincpu,program,7c9,2,64,0
+
+nes,advisln2:
+nes,Hudson's Adventure Island II (U) [!]:
+nes,crc32=5d8f80c7:
+@:maincpu,program,3d8,5,00,00
+
+nes,Burai Fighter (U) [!]:
+nes,crc32=519ae8f2:
+@:maincpu,program,7c4,8,00,00
+
+nes,Daiku no Gen San (J):
+nes,crc32=52b2162d:
+@:maincpu,program,125,5,00,00
+
+nes,Super Contra (J):
+nes,crc32=9bb6059e:
+@:maincpu,program,7e0,4,00,00
 
 snes,axelay:
 snes,Axelay (E) [!]:
@@ -119,23 +136,6 @@ megadriv,Thunder Force IV (Europe):
 @:maincpu,program,f000,50,4d,50
 @:maincpu,program,f08a,4,00,90
 
-nes,advisln2:
-nes,Hudson's Adventure Island II (U) [!]:
-nes,crc32=5d8f80c7:
-@:maincpu,program,3d8,5,00,00
-
-nes,Burai Fighter (U) [!]:
-nes,crc32=519ae8f2:
-@:maincpu,program,7c4,8,00,00
-
-nes,Daiku no Gen San (J):
-nes,crc32=52b2162d:
-@:maincpu,program,125,5,00,00
-
-nes,Super Contra (J):
-nes,crc32=9bb6059e:
-@:maincpu,program,7e0,4,00,00
-
 genesis,Trouble Shooter (U) [!]:
 genesis,crc32=becfc39b:
 @:maincpu,program,fe24,2,00,00
@@ -152,9 +152,45 @@ genesis,Air Buster (U) [c][!]:
 genesis,crc32=f3d65baa:
 @:maincpu,program,ff16,4,00,00
 
-;2FIX: shifted?
-;pce,Bouken Danshaku Don - The Lost Sunheart (J):
-;@:maincpu,program,200,a1,00,20
+genesis,Streets of Rage (W) (REV00):
+genesis,Bare Knuckle - Ikari no Tetsuken ~ Streets of Rage (World):
+genesis,crc32=BFF227C6:
+@:maincpu,program,ff30,a0,00,00
+
+genesis,Streets of Rage 2 (U) [!]:
+genesis,crc32=e01fa526
+genesis,Streets of Rage 2 (U) (Restoration Hack):
+@:maincpu,program,fd30,a0,10,00
+
+genesis,Shinobi III - Return of the Ninja Master (U) [!]: 
+genesis,crc32=5381506F
+genesis.shinobi3:
+@:maincpu,program,18,4,00,00
+
+;WIP
+;genesis,Midnight Resistance (U) (Pyron Color Hack):
+;@:maincpu,program,10BED,2,ff,ff
+
+;WIP:
+;genesis,Super Fantasy Zone (J) [!]:
+;@:maincpu,program,17812,2,22,00
+
+;WIP:
+;genesis,Joe & Mac Caveman Ninja (U) (Pyron Color Hack):
+;@:maincpu,program,6F16,96,00,F9
+
+;WIP:
+;genesis,Chiki Chiki Boys (UE) (Pyron Color Hack):
+;@:maincpu,program,8006,2A,00,00
+
+;WIP:
+;genesis,Gley Lancer (J) [T+Eng20061023_MIJET]:
+;genesis,Gley Lancer (J) [T+Eng_MIJET] [t eadmaster]:
+;@:maincpu,program,FE07,4,00,00
+
+;WIP:
+;genesis,Gaiares (JU) [!]:
+;@:maincpu,program,FFE0,4,00,00
 
 pce,Gunhed (J):
 ; Blazing Lazers
