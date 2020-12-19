@@ -108,16 +108,16 @@ function hiscore.startplugin()
 	  local rm_match_crc = 0;
 	  if emu.softname() ~= "" then
 		local soft = emu.softname():match("([^:]*)$")
-		rm_match = '^' .. emu.romname() .. ',' .. soft .. ':';
+		rm_match = emu.romname() .. ',' .. soft .. ':';
 	  elseif manager:machine().images["cart"] and manager:machine().images["cart"]:filename() ~= nil then
 		local basename = string.gsub(manager:machine().images["cart"]:filename(), ".*[\\/](.*)", "%1");
 		local filename = string.gsub(basename, "(.*)(%..*)", "%1");   -- strip the extension (e.g. ".nes")
-		rm_match = '^' .. emu.romname() .. "," .. filename .. ':';
+		rm_match = emu.romname() .. "," .. filename .. ':';
 		rm_match_crc = emu.romname() .. ",crc32=" .. string.format("%x", manager:machine().images["cart"]:crc()) .. ':';
 	  elseif manager:machine().images["cdrom"] and manager:machine().images["cdrom"]:filename() ~= nil then
 		local basename = string.gsub(manager:machine().images["cdrom"]:filename(), ".*[\\/](.*)", "%1");
 		local filename = string.gsub(basename, "(.*)(%..*)", "%1");   -- strip the extension (e.g. ".cue")
-		rm_match = '^' .. emu.romname() .. "," .. filename .. ':';
+		rm_match = emu.romname() .. "," .. filename .. ':';
 		--rm_match_crc = string.format("%x", manager:machine().images["cdrom"]:crc()) .. ':';  -- always 0 with cdrom media?
 	  else
 		rm_match = emu.romname() .. ':';
@@ -135,7 +135,7 @@ function hiscore.startplugin()
 			  if current_is_match then
 				cluster = cluster .. "\n" .. line;
 			  end
-			elseif string.find(line, rm_match) then --- match this game
+			elseif line == rm_match then --- match this game
 			  current_is_match = true;
 			elseif line == rm_match_crc then --- match this game crc
 			  current_is_match = true;
@@ -175,15 +175,15 @@ function hiscore.startplugin()
 	  local r;
 	  if emu.softname() ~= "" then
 		local soft = emu.softname():match("([^:]*)$")
-		r = hiscore_path .. '/' .. emu.romname() .. '/' .. soft .. ".hi";
+		r = hiscore_path .. '/' .. soft .. ".hi";
 	  elseif manager:machine().images["cart"] and manager:machine().images["cart"]:filename() ~= nil then
 		local basename = string.gsub(manager:machine().images["cart"]:filename(), ".*[\\/](.*)", "%1");
 		local filename = string.gsub(basename, "(.*)(%..*)", "%1");   -- strip the extension (e.g. ".nes")
-		r = hiscore_path .. '/' .. emu.romname() .. '/' .. filename .. ".hi";
+		r = hiscore_path .. '/' .. filename .. ".hi";
 	  elseif manager:machine().images["cdrom"] and manager:machine().images["cdrom"]:filename() ~= nil then
 		local basename = string.gsub(manager:machine().images["cdrom"]:filename(), ".*[\\/](.*)", "%1");
 		local filename = string.gsub(basename, "(.*)(%..*)", "%1");   -- strip the media extension (e.g. ".cue")
-		r = hiscore_path .. '/' .. emu.romname() .. '/' .. filename .. ".hi";
+		r = hiscore_path .. '/' .. filename .. ".hi";
 	  else
 		-- arcade games
 		r = hiscore_path .. '/' .. emu.romname() .. ".hi";

@@ -135,6 +135,10 @@ while True:
 		start_byte = int(splitted_row[4], base=16)
 		end_byte = int(splitted_row[5], base=16)
 		
+		# fix genesis address
+		if reported_system_id == "mega_drive" and address > 0xff0000:
+			address -= 0xff0000
+		
 		response_bytes = retroarch.read_core_ram(address, length)
 		#logging.debug(len(response_bytes))
 		#logging.debug(int(response_bytes[0], base=16))

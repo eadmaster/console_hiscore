@@ -22,6 +22,8 @@
 ; [repeat the above as many times as necessary]
 ;
 ; Based on the Unofficial hiscore.dat file from http://highscore.mameworld.info/
+;
+; MEMO: mame system names  http://www.progettoemma.net/mess/sysset.php
 
 
 ; ---- codes made by Leezer
@@ -152,28 +154,58 @@ genesis,Air Buster (U) [c][!]:
 genesis,crc32=f3d65baa:
 @:maincpu,program,ff16,4,00,00
 
-genesis,Streets of Rage (W) (REV00):
-genesis,Bare Knuckle - Ikari no Tetsuken ~ Streets of Rage (World):
-genesis,crc32=BFF227C6:
-@:maincpu,program,ff30,a0,00,00
+;WIP
+;genesis,Streets of Rage (W) (REV00):
+;genesis,Bare Knuckle - Ikari no Tetsuken ~ Streets of Rage (World):
+;genesis,crc32=BFF227C6:
+;@:maincpu,program,ff40,a,00,34
 
 genesis,Streets of Rage 2 (U) [!]:
-genesis,crc32=e01fa526
+genesis,crc32=e01fa526:
 genesis,Streets of Rage 2 (U) (Restoration Hack):
 @:maincpu,program,fd30,a0,10,00
 
+;WIP (big int)
+;genesis,Revenge of Shinobi, The (W) (REV00) [!]: 
+;genesis,crc32=5C7E5EA6:
+;genesis,revshin:
+
 genesis,Shinobi III - Return of the Ninja Master (U) [!]: 
-genesis,crc32=5381506F
-genesis.shinobi3:
+genesis,crc32=5381506F:
+genesis,shinobi3:
 @:maincpu,program,18,4,00,00
 
-;WIP
-;genesis,Midnight Resistance (U) (Pyron Color Hack):
-;@:maincpu,program,10BED,2,ff,ff
+genesis,Elemental Master (U) [!]:
+genesis,crc32=390918c6:
+genesis,elemast:
+@:maincpu,program,f2ee,4,00,a0
 
-;WIP:
-;genesis,Super Fantasy Zone (J) [!]:
-;@:maincpu,program,17812,2,22,00
+genesis,Mercs (W) [!]:
+genesis,crc32=16113a72:
+@:maincpu,program,fe80,58,ff,00
+; TODO: can be made smaller?
+
+genesis,Midnight Resistance (U) [!]:
+genesis,crc32=187c6af6:
+@:maincpu,program,fe00,60,00,00
+
+genesis,Super Fantasy Zone (J) [!]:
+genesis,crc32=767780d7:
+@:maincpu,program,2,4,00,00
+
+genesis,Strider Hiryuu (J) [!]:
+genesis,crc32=859173f2:
+@:maincpu,program,fd0e,2,07,d0
+
+
+;WIP (big int)
+;genesis,Ranger-X (U) [!]:
+;genesis,crc32=55915915:
+
+;WIP
+;genesis,Bio-Hazard Battle (UE) [!]:
+;@:maincpu,program,F1D4,4,00,00
+;@:maincpu,program,F252,4,00,00
 
 ;WIP:
 ;genesis,Joe & Mac Caveman Ninja (U) (Pyron Color Hack):
@@ -191,6 +223,11 @@ genesis.shinobi3:
 ;WIP:
 ;genesis,Gaiares (JU) [!]:
 ;@:maincpu,program,FFE0,4,00,00
+
+;WIP:
+;sms,Aleste (W) [!]:
+;@:maincpu,program,F08,4,00,00
+;@:maincpu,program,F0C,4,00,00
 
 pce,Gunhed (J):
 ; Blazing Lazers

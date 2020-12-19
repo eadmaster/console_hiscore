@@ -119,7 +119,6 @@ def get_raw_memory_from_statedata(statedata):
 	# end of Snes9x
 
 	# bsnes  https://github.com/byuu/bsnes/blob/master/bsnes/sfc/system/serialization.cpp
-	#elif statedata.startswith(b'42\x53\x54\x31\x0F\x00\x00\x00\x70\x4C\x87\x10\x50\x65\x72\x66\x6F\x72\x6D\x61\x6E\x63\x65'):  # BST1....pL..Performance
 	#elif statedata[0x15:0x19] == b'BST1':  # old compressed saves?
 	elif statedata.startswith(b'BST1'):
 		logging.warning("bsnes support is still WIP")
@@ -143,18 +142,20 @@ def get_raw_memory_from_statedata(statedata):
 	elif statedata.startswith(b'GENPLUS-GX'):
 		logging.warning("GENPLUS-GX support is still WIP")
 		emulator = "genplus"
-		candidate_systems = [ "genesis", "megadrij", "megadriv", "segacd" ]
-		raw_memory = statedata[16:]  # TODO: cut end ram?
+		candidate_systems = [ "genesis", "megadrij", "megadriv", "segacd", "sms", "smsj", "smspal", "gamegear", "gamegeaj" ]
+		raw_memory = statedata[16:]  # strip STATE_VERSION header
 		
-		#TODO: detect sms+gamegear: check the address space?  https://www.smspower.org/Development/MemoryMap
-		#if ...
-		#	raw_memory = statedata[16:0x200F]
+		# TODO: detect sms+gamegear: check the io_regs binary string  https://www.smspower.org/Development/MemoryMap
+		# better detection?
+		#if raw_memory[0x2007:0x2010] == b'\x00\x00\x00\x00\x00\x000\xa8\xff':
+		#if raw_memory[0x2011:].startswith(b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'):
 		#	candidate_systems = [ "sms", "smsj", "smspal", "gamegear", "gamegeaj" ]
-
+		#	raw_memory = statedata[0:0x2000]  # SMS work ram is 0x2000 sized
 	# end of Genesis-Plus-GX
+	
 	elif statedata.startswith(b'Pico'):
 		emulator = "picodrive"
-		candidate_systems = [ "genesis", "megadrij", "megadriv", "segacd" ]
+		candidate_systems = [ "genesis", "megadrij", "megadriv", "segacd", "sms", "smsj", "smspal", "gamegear", "gamegeaj", "32x" ]
 		raw_memory = statedata[0x76:]
 		#TODO: detect sms+gamegear: check the address space?  https://www.smspower.org/Development/MemoryMap
 		
@@ -173,6 +174,8 @@ def get_raw_memory_from_statedata(statedata):
 		raw_memory = statedata[raw_memory_start_offset:]
 	# end of Mednafen PC Engine
 
+	# TODO: FBNeo
+	
 	# TODO: MAME https://github.com/mamedev/mame/blob/master/src/emu/save.cpp
 	elif statedata.startswith(b'MAMESAVE'):
 		#print("format ver: " + str(statedata[8]))
@@ -341,11 +344,10 @@ if __name__ == '__main__':
 		start_byte = int(splitted_row[4], base=16)
 		end_byte = int(splitted_row[5], base=16)
 
+		# fix high genesis addresses
 		if EMU=="genplus":
-			# fix genesis address
 			if address > 0xff0000:
 				address -= 0xff0000
-			# TODO: byte swap
 		elif EMU=="gambatte":
 			address -= 0x7728
 			
