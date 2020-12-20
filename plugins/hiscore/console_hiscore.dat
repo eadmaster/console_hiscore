@@ -45,11 +45,11 @@ genesis,crc32=1b3f399a:
 ; ---- codes made by KorobonFan
 
 ;2FIX: gets overwritten when a new game is started
-;nes,buckyu:
-;nes,Bucky O'Hare (USA):
-;nes,Bucky O'Hare (U) [!]:
-;nes,crc32=3c9622d3:
-;@:maincpu,program,48,4,05,00
+nes,buckyu:
+nes,Bucky O'Hare (USA):
+nes,Bucky O'Hare (U) [!]:
+nes,crc32=3c9622d3:
+@:maincpu,program,48,4,05,00
 
 nes,crystalp:
 nes,Conquest of the Crystal Palace (USA):
@@ -189,36 +189,54 @@ genesis,Midnight Resistance (U) [!]:
 genesis,crc32=187c6af6:
 @:maincpu,program,fe00,60,00,00
 
-genesis,Super Fantasy Zone (J) [!]:
-genesis,crc32=767780d7:
+megadrij,Super Fantasy Zone (J) [!]:
+megadrij,crc32=767780d7:
 @:maincpu,program,2,4,00,00
 
-genesis,Strider Hiryuu (J) [!]:
-genesis,crc32=859173f2:
+megadrij,Strider Hiryuu (J) [!]:
+megadrij,crc32=859173f2:
 @:maincpu,program,fd0e,2,07,d0
 
+megadrij,Hellfire (J) [!]:
+megadrij,crc32=8e5e13ba:
+@:maincpu,program,2a,4,00,00
+
+megadrij,Alien Soldier (J) [!]:
+genesis,crc32=90FA1539:
+@:maincpu,program,FF2C,4,00,00
+; TODO: check if there are more stats that are preserved
+
+megadrij,Gley Lancer (J) [!]:
+megadrij,Gley Lancer (J) [T+Eng20061023_MIJET]:
+genesis,crc32=42CF9B5B:
+@:maincpu,program,FE06,4,00,00
+
+genesis,Bio-Hazard Battle (UE) [!]:
+; TODO: check also: megadrij,Crying - Asia Seimei Sensou (J):
+genesis,crc32=95b0ea2b:
+@:maincpu,program,F1D4,4,00,00
+
+genesis,Joe & Mac Caveman Ninja (U) [!]:
+genesis,Joe & Mac Caveman Ninja (U) (Pyron Color Hack):
+genesis,crc32=85bcc1c7:
+@:maincpu,program,6F16,98,00,00
+
+genesis,Ghouls 'N Ghosts (W) (REV 01) [!]:
+genesis,crc32=d31bd910:
+@:maincpu,program,fe0a,2,03,e8
+
+;WIP
+;genesis,Two Crude Dudes (U) [!]:
+;genesis,crc32=721b5744:
+;@:maincpu,program,FE02,2,00,00
 
 ;WIP (big int)
 ;genesis,Ranger-X (U) [!]:
 ;genesis,crc32=55915915:
 
-;WIP
-;genesis,Bio-Hazard Battle (UE) [!]:
-;@:maincpu,program,F1D4,4,00,00
-;@:maincpu,program,F252,4,00,00
-
-;WIP:
-;genesis,Joe & Mac Caveman Ninja (U) (Pyron Color Hack):
-;@:maincpu,program,6F16,96,00,F9
-
 ;WIP:
 ;genesis,Chiki Chiki Boys (UE) (Pyron Color Hack):
 ;@:maincpu,program,8006,2A,00,00
-
-;WIP:
-;genesis,Gley Lancer (J) [T+Eng20061023_MIJET]:
-;genesis,Gley Lancer (J) [T+Eng_MIJET] [t eadmaster]:
-;@:maincpu,program,FE07,4,00,00
 
 ;WIP:
 ;genesis,Gaiares (JU) [!]:
