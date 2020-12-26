@@ -45,11 +45,11 @@ genesis,crc32=1b3f399a:
 ; ---- codes made by KorobonFan
 
 ;2FIX: gets overwritten when a new game is started
-nes,buckyu:
-nes,Bucky O'Hare (USA):
-nes,Bucky O'Hare (U) [!]:
-nes,crc32=3c9622d3:
-@:maincpu,program,48,4,05,00
+;nes,buckyu:
+;nes,Bucky O'Hare (USA):
+;nes,Bucky O'Hare (U) [!]:
+;nes,crc32=3c9622d3:
+;@:maincpu,program,48,4,05,00
 
 nes,crystalp:
 nes,Conquest of the Crystal Palace (USA):
@@ -225,6 +225,22 @@ genesis,Ghouls 'N Ghosts (W) (REV 01) [!]:
 genesis,crc32=d31bd910:
 @:maincpu,program,fe0a,2,03,e8
 
+genesis,Burning Force (U) [!]:
+genesis,crc32=bdc8f02c:
+@:maincpu,program,d900,4,00,00
+
+genesis,Castlevania - Bloodlines (U) [!]:
+genesis,crc32=fb1ea6df:
+genesis,Castlevania - Bloodlines (U) (Pyron color hack):
+; TODO: test vampire hunter
+@:maincpu,program,fb00,4,00,62
+
+;WIP
+;genesis,Panorama Cotton (J) [c] [T+Eng1.0.1_Malias]:
+;genesis,crc32=ed7d8f14:
+;@:maincpu,program,CB7,2,ff,ff
+;@:maincpu,program,8924,??,00,00
+
 ;WIP
 ;genesis,Two Crude Dudes (U) [!]:
 ;genesis,crc32=721b5744:
@@ -234,9 +250,9 @@ genesis,crc32=d31bd910:
 ;genesis,Ranger-X (U) [!]:
 ;genesis,crc32=55915915:
 
-;WIP:
+;WIP: (gets overwritten)
 ;genesis,Chiki Chiki Boys (UE) (Pyron Color Hack):
-;@:maincpu,program,8006,2A,00,00
+;@:maincpu,program,8006,30,57,00
 
 ;WIP:
 ;genesis,Gaiares (JU) [!]:
@@ -248,6 +264,7 @@ genesis,crc32=d31bd910:
 ;@:maincpu,program,F0C,4,00,00
 
 pce,Gunhed (J):
-; Blazing Lazers
 pce,crc32=59cdc8d0:
+; TODO: check also: tg16,Blazing Lazers (U).pce:
+;tg16,crc32=b4a1b0f6:
 @:maincpu,program,36e,4,00,00
