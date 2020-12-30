@@ -147,7 +147,7 @@ while True:
 			logging.error("invalid address found in hiscore datfile (skipped): " + str(hex(address)))
 			break
 		
-		if response_bytes and reported_system_id == "mega_drive":  # TODO: test core==genplusgx
+		if response_bytes and len(response_bytes)>1 and reported_system_id == "mega_drive":  # TODO: test core==genplusgx
 			# need to byteswap response_bytes
 			response_bytes_swapped = list()
 			for i in range(0, len(response_bytes)-1, 2):

@@ -217,8 +217,8 @@ genesis,crc32=95b0ea2b:
 @:maincpu,program,F1D4,4,00,00
 
 genesis,Joe & Mac Caveman Ninja (U) [!]:
-genesis,Joe & Mac Caveman Ninja (U) (Pyron Color Hack):
 genesis,crc32=85bcc1c7:
+genesis,Joe & Mac Caveman Ninja (U) (Pyron Color Hack):
 @:maincpu,program,6F16,98,00,00
 
 genesis,Ghouls 'N Ghosts (W) (REV 01) [!]:
@@ -232,19 +232,23 @@ genesis,crc32=bdc8f02c:
 genesis,Castlevania - Bloodlines (U) [!]:
 genesis,crc32=fb1ea6df:
 genesis,Castlevania - Bloodlines (U) (Pyron color hack):
-; TODO: test vampire hunter
+megadrij,Vampire Killer (J) [!]:
+megadrij,Akumajou Dracula - Vampire Killer (J):
+genesis,crc32=ebe97dd5:
 @:maincpu,program,fb00,4,00,62
+
+genesis,Two Crude Dudes (U) [!]:
+genesis,crc32=721b5744:
+@:maincpu,program,FE02,2,00,00
+; TODO: sometimes not working?
 
 ;WIP
 ;genesis,Panorama Cotton (J) [c] [T+Eng1.0.1_Malias]:
 ;genesis,crc32=ed7d8f14:
 ;@:maincpu,program,CB7,2,ff,ff
 ;@:maincpu,program,8924,??,00,00
-
-;WIP
-;genesis,Two Crude Dudes (U) [!]:
-;genesis,crc32=721b5744:
-;@:maincpu,program,FE02,2,00,00
+;TODO: save switch mode unlocked in options https://gamehacking.org/game/15627
+;@:maincpu,program,F32B,1,00,00
 
 ;WIP (big int)
 ;genesis,Ranger-X (U) [!]:

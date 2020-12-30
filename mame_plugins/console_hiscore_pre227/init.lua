@@ -2,13 +2,13 @@
 -- by borgar@borgar.net & eadmaster, WTFPL license
 --
 -- This uses MAME's built-in Lua scripting to implment
--- high-score saving with hiscore.dat infom just as older
+-- high-score saving with console_hiscore.dat infom just as older
 -- builds did in the past.
 --
 local exports = {}
-exports.name = "hiscore"
-exports.version = "1.1.0"
-exports.description = "Hiscore"
+exports.name = "console_hiscore"
+exports.version = "1.1.1"
+exports.description = "Console Hiscore support"
 exports.license = "WTFPL license"
 exports.author = { name = "borgar@borgar.net & eadmaster" }
 local hiscore = exports
@@ -21,7 +21,7 @@ end
 
 function hiscore.startplugin()
 
-	local hiscoredata_path = "hiscore.dat";
+	local hiscoredata_path = "console_hiscore.dat";
 	local hiscore_path = "hi";  -- TODO: read the actual mame user dir (e.g. "$HOME/.mame")
 	--local hiscore_path = manager:options().entries.homepath:value() .. "/hi";
 	local config_path = lfs.env_replace(manager:options().entries.inipath:value():match("[^;]+") .. "/hiscore.ini");
@@ -44,7 +44,7 @@ function hiscore.startplugin()
 	  local file = io.open( config_path, "r" );
 	  if file then
 		file:close()
-		emu.print_verbose( "hiscore: config found" );
+		emu.print_verbose( "console_hiscore: config found" );
 		local _conf = {}
 		for line in io.lines(config_path) do
 		  token, value = string.match(line, '([^ ]+) +([^ ]+)');
@@ -114,6 +114,7 @@ function hiscore.startplugin()
 		local filename = string.gsub(basename, "(.*)(%..*)", "%1");   -- strip the extension (e.g. ".nes")
 		rm_match = emu.romname() .. "," .. filename .. ':';
 		rm_match_crc = emu.romname() .. ",crc32=" .. string.format("%x", manager:machine().images["cart"]:crc()) .. ':';
+		-- TODO: get global CRC32 for NES ROMS (returns PRG CRC32 only)
 	  elseif manager:machine().images["cdrom"] and manager:machine().images["cdrom"]:filename() ~= nil then
 		local basename = string.gsub(manager:machine().images["cdrom"]:filename(), ".*[\\/](.*)", "%1");
 		local filename = string.gsub(basename, "(.*)(%..*)", "%1");   -- strip the extension (e.g. ".cue")
@@ -135,9 +136,10 @@ function hiscore.startplugin()
 			  if current_is_match then
 				cluster = cluster .. "\n" .. line;
 			  end
-			elseif line == rm_match then --- match this game
+			--elseif line == rm_match then --- match this game (2FIX: problem with comments)
+			elseif string.sub(line,1,string.len(rm_match))==rm_match then
 			  current_is_match = true;
-			elseif line == rm_match_crc then --- match this game crc
+			elseif string.sub(line,1,string.len(rm_match_crc))==rm_match_crc then --- match this game crc
 			  current_is_match = true;
 			elseif string.find(line, '^.+:') then --- some game
 			  if current_is_match and string.len(cluster) > 0 then
@@ -193,17 +195,14 @@ function hiscore.startplugin()
 
 
 	local function write_scores ( posdata )
-	  emu.print_verbose("hiscore: write_scores")
+	  emu.print_verbose("console hiscore: write_scores")
 	  local output = io.open(get_file_name(), "wb");
 	  if not output then
 		-- attempt to create the directory, and try again
 		lfs.mkdir( hiscore_path );
-		if manager:machine().images["cart"] or manager:machine().images["cdrom"] then
-			lfs.mkdir( hiscore_path .. '/' .. emu.romname() );
-		end
 		output = io.open(get_file_name(), "wb");
 	  end
-	  emu.print_verbose("hiscore: write_scores output")
+	  emu.print_verbose("console_hiscore: write_scores output")
 	  if output then
 		for ri,row in ipairs(posdata) do
 		  t = {};
@@ -214,7 +213,7 @@ function hiscore.startplugin()
 		end
 		output:close();
 	  end
-	  emu.print_verbose("hiscore: write_scores end")
+	  emu.print_verbose("console_hiscore: write_scores end")
 	  -- TODO: only show if the file is new?
 	  -- manager:machine():popmessage("hiscores saved")
 	end
@@ -253,12 +252,11 @@ function hiscore.startplugin()
 		if (delaytime <= emu.time()) and check_mem( positions ) then
 		  default_checksum = check_scores( positions );
 		  if read_scores( positions ) then
-			emu.print_verbose( "hiscore: scores read OK" );
-			--emu.message("hiscores loaded")  -- no longer supported?
+			emu.print_verbose( "console_hiscore: scores read OK" );
 			manager:machine():popmessage("hiscores loaded")
 		  else
 			-- likely there simply isn't a .hi file around yet
-			emu.print_verbose( "hiscore: scores read FAIL" );
+			emu.print_verbose( "console_hiscore: scores read FAIL" );
 		  end
 		  scores_have_been_read = true;
 		  current_checksum = check_scores( positions );
@@ -297,7 +295,7 @@ function hiscore.startplugin()
 	end
 
 	local function reset()
-	  -- the notifier will still be attached even if the running game has no hiscore.dat entry
+	  -- the notifier will still be attached even if the running game has no console_hiscore.dat entry
 	  if mem_check_passed and found_hiscore_entry then
 		local checksum = check_scores(positions)
 		if checksum ~= current_checksum and checksum ~= default_checksum then
@@ -316,16 +314,12 @@ function hiscore.startplugin()
 		last_write_time = -10
 		emu.print_verbose("Starting " .. emu.gamename())
 		config_read = read_config();
-		local dat = read_hiscore_dat("hiscore.dat")
-		if dat and dat == "" then
-			-- nothing found, try in console_hiscore.dat instead
-			dat = read_hiscore_dat("console_hiscore.dat")
-		end
+		local dat = read_hiscore_dat("console_hiscore.dat")
 		if dat and dat ~= "" then
-			emu.print_verbose( "hiscore: found hiscore.dat entry for " .. emu.romname() );
+			emu.print_verbose( "console_hiscore: found console_hiscore.dat entry for " .. emu.romname() );
 			res, positions = pcall(parse_table, dat);
 			if not res then
-				emu.print_error("hiscore: hiscore.dat parse error " .. positions);
+				emu.print_error("console_hiscore: console_hiscore.dat parse error " .. positions);
 				return;
 			end
 			for i, row in pairs(positions) do
